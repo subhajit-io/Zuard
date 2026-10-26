@@ -1,0 +1,562 @@
+=== PAGE 1 ===
+Inkloom AI Challenge – Round 1 Submission (“The Plan”)
+Zuard
+Intelligent Pre-Publication Brand Governance Platform
+Team Xnihilo
+Team Members
+Name
+Role
+Subhajit Das
+Team Leader – Multimodal RAG & AI Architecture
+Sambu Chowdhury
+Core AI Engineer – Branched RAG & Static Audit Pipeline
+Rana Tarafdar
+Full-Stack Engineer – Frontend & FastAPI Backend Bridge
+Mousumi Bag
+UI/UX Engineer – Frontend Review Portal & Approval Workflow
+Contents
+
+1. Problem Definition & Evidence
+
+2. Target Users, Their Needs & Organisational Setting
+
+3. Public Social Media Discussions & Community Evidence
+
+4. Proposed Solution, Value Proposition & End-to-End Workflow
+
+5. Planned Features, Technology Stack, Integrations & Data Sources
+
+6. Responsible-Design Considerations: Privacy, Security & Human Oversight
+
+7. Development Plan, Role Allocation & Expected Impact
+
+
+=== PAGE 2 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 2
+1. PROBLEM DEFINITION & EVIDENCE THE PROBLEM IS REAL
+1.1 The Core Problem
+Growing organisations publish content at high velocity through internal employees and external marketing
+agencies. Because brand rules live in static, disconnected PDF files and spreadsheets, content frequently goes live
+without unified verification. This creates brand inconsistency and credibility damage across six critical
+dimensions:
+#
+Dimension
+What goes wrong
+1
+Inconsistent Tone & Brand Voice
+Copy written by different employees or agencies drifts away from the organisation's
+approved persona.
+2
+Banned & Inconsistent Terminology
+Use of deprecated product names, unapproved industry jargon, or restricted
+promotional buzzwords (e.g., "cheap", "guaranteed").
+3
+Outdated Factual Information
+Publishing legacy pricing tiers, retired feature specifications, or outdated company
+metrics.
+4
+Unsupported Promotional Claims
+Making unverifiable superlative claims (e.g., "#1 fastest platform", "99.9% cost
+reduction") without approved source backing.
+5
+Off-Brand Visual Consistency
+Marketing banners and promotional graphics using unapproved Hex color codes or
+stretched logos.
+6
+Accessibility Non-Compliance
+Publishing visuals and documents that fail WCAG 2.1 AA/AAA color-contrast
+standards (minimum 4.5:1) or omit alt-text.
+1.2 Visual Illustration 1: The Brand Governance Gateway & Pre-Publication Flow
+The table below maps each content source to the risk vectors it creates and the gateway stage that addresses them;
+the illustration that follows shows the same flow visually.
+Uncontrolled Content Source
+Pre-Publication Risk Vector
+Zuard Central Gateway
+Internal Employees (Copywriters,
+Product Marketers, Social Media
+Leads)
+1. Tone & Voice Drift: inconsistent
+brand personality across channels
+Stage 1 – Branched Multimodal RAG: indexes
+Brand Voice PDFs, Approved Facts SQL, and
+Visual Asset Rules
+External Agencies (Freelance
+Writers, Design Studios, PR
+Partners)
+2. Terminology Violations: banned
+words, slang, and deprecated product
+names
+Stage 2 – Static Worker 1 (Lexical & Style):
+sub-150ms Regex/Aho-Corasick banned-term
+scan + Textstat tone metrics
+Content Management & Publishing
+Teams
+3. Outdated Facts: legacy pricing, old
+metrics, and retired feature specs
+Stage 3 – Static Worker 2 (Fact Verification):
+automated claim extraction cross-checked
+against Approved Facts SQL DB
+Marketing Graphic Creators &
+Designers
+4. Unsupported Claims: unverified
+superlatives ("#1", "99% faster")
+causing legal risk
+Stage 4 – Static Worker 3 (Visual Audit):
+OpenCV/Pillow K-Means Hex Delta-E palette
+check + EasyOCR banner scan
+Distributed Publishing Workflows
+(Web Docs, CMS, PDFs)
+5. Off-Brand Visuals: unapproved Hex
+color palettes and improper logo usage
+Stage 5 – Static Worker 4 (Accessibility):
+deterministic WCAG 2.1 AA/AAA contrast
+math + alt-text & readability check
+Direct Publishing Channels (Blogs,
+Press Releases, Socials)
+6. Accessibility Failures: low contrast
+(<4.5:1), missing alt-text, complex
+readability
+Stage 6 – Delta-Only Gemini Synthesis &
+Manager Approval: explains cited rules,
+suggests rewrites, and enforces sign-off
+
+
+=== PAGE 3 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 3
+Illustration 1
+ Pre-publication brand governance flow and risk mitigation – from uncontrolled content sources to verified, compliant output.
+2. TARGET USERS, THEIR NEEDS & ORGANISATIONAL SETTING
+2.1 Organisational Setting
+Zuard is designed as a centralized web platform for scaling startups, mid-sized enterprises, and digital
+marketing agencies where internal teams and external contributors produce multi-format content (blog posts, ad
+copy, PDF brochures, social graphics) within a structured review workflow.
+
+
+=== PAGE 4 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 4
+2.2 Target User Personas & Specific Needs
+Persona
+Organisational Role
+Core Pain Points
+What They Need from
+Zuard
+Persona A: Content
+Creators (Writers,
+Designers, Agency
+Contributors)
+Drafts daily articles, ad
+copy, social posts, and
+promotional graphics in
+the web portal
+Frustrated by 50-page brand
+PDFs, slow manager rejections,
+and vague feedback that forces
+full rewrites
+Real-time, constructive explanations
+citing exact rules, plus 1-click rewrite
+suggestions that preserve their
+original creative purpose
+Persona B:
+Authorised
+Reviewers (Brand
+Managers, Legal &
+Compliance Leads)
+Reviews and approves
+content prior to
+publication to protect
+brand identity and legal
+compliance
+Spends 4–6 hours/week manually
+checking hex codes, statistics, and
+banned terms across dozens of
+drafts
+Pre-screened drafts with highlighted
+issues, side-by-side diff comparison,
+inline commenting, revision history,
+and role-based sign-off
+Persona C: Brand
+Authorities (CMOs,
+Brand Directors,
+Non-Tech Admins)
+Defines official brand
+guidelines, approved facts,
+terminology dictionaries,
+and visual asset kits
+No visibility into which brand
+rules are repeatedly broken or
+where guidelines confuse creators
+A zero-code drag-and-drop vault to
+upload guidelines/facts/assets and a
+Governance Insights Dashboard
+tracking recurring mistakes
+3. PUBLIC SOCIAL MEDIA DISCUSSIONS & COMMUNITY
+EVIDENCE
+ An analysis of public social media posts and community discussions across Reddit (r/marketing, r/copywriting,
+r/graphic_design), LinkedIn marketing forums, and X/Twitter threads reveals widespread, real-world operational
+friction caused by static brand guidelines and manual approval bottlenecks:
+1. Frustration with Static PDFs & Disrupted Creative Flow (Reddit & X/Twitter Discussions)
+
+Creators frequently post about ignoring 50+ page PDF style guides because searching through complex PDF
+documents while drafting content severely interrupts writing momentum.
+
+Marketing professionals on LinkedIn regularly advocate for centralized automated tools that pre-screen drafts
+and offer instant, line-by-line compliance checks before manager submission.
+2. Reviewer Fatigue & Slow Review Cycles (LinkedIn & Marketing Forum Records)
+
+Brand managers report spending hours weekly manually flagging repetitive errors, including deprecated
+terminology, unverified superlatives, off-brand color Hex codes, and low-contrast text overlays.
+
+Discussions emphasize that outright rejections create friction; reviewers need systems that explain rule
+violations and provide constructive, compliant rewrite alternatives.
+3. Widespread Brand Drift in Published Digital Content (Search & Social Media Benchmarks)
+
+Public content audits discussed across design and marketing forums show high rates of unverified promotional
+claims and promotional graphics failing WCAG 2.1 AA contrast standards (4.5:1) when published without
+automated verification.
+4. PROPOSED SOLUTION, VALUE PROPOSITION & END-TO-END
+WORKFLOW
+4.1 Core Value Proposition
+Zuard is an intelligent, centralized web platform consisting of:
+
+
+=== PAGE 5 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 5
+1
+A Central Multimodal Brand Vault & Collaborative Web Portal: where non-technical Brand Authorities
+upload guidelines, approved facts, terminology, and visual assets, and where Creators submit drafts
+(text/images) for automated pre-screening.
+2
+A 4-Worker Deterministic Pre-Check + Branched RAG + Delta-Only LLM Engine: runs 4 parallel static
+Python workers in ~150ms (0 LLM calls) to detect exact violations, queries a Branched Multimodal RAG for
+the matching brand rules, and sends only the flagged snippets ("Delta-Only") to 1 single Google Gemini call to
+generate clear explanations and intent-preserving rewrites.
+3
+A Role-Based Manager Approval & Revision Workflow: a clean dashboard where managers collaborate
+through side-by-side diffs, comments, and approvals, backed by a Governance Insights telemetry log.
+
+
+=== PAGE 6 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 6
+4.2 Visual Illustration 2: End-to-End Upgraded Multimodal RAG & Governance Architecture
+Illustration 2
+ End-to-end multimodal RAG and governance architecture – four layers from Brand Vault ingestion to human-in-the-loop review.
+
+
+=== PAGE 7 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 7
+5. PLANNED FEATURES, TECHNOLOGY STACK, INTEGRATIONS &
+DATA SOURCES
+Processing Pipeline Overview
+Supplementary diagram
+ The four processing stages: Brand Vault ingestion, parallel static audit, delta-only Gemini synthesis, and human-in-the-loop
+ approval.
+
+
+=== PAGE 8 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 8
+5.1 Complete Feature Matrix Mapped to Suggested Product Capabilities
+Inkloom AI Required Capability
+Zuard (Team Xnihilo) Planned Implementation
+Import or define brand guidelines,
+approved facts, terminology & reusable
+assets
+Drag-and-drop Brand Vault supporting PDF style guides, structured Approved
+Facts tables, Banned/Preferred Term dictionaries, Hex color codes, and official
+logo files.
+Review text, images, documents or other
+supported content formats
+Centralized web upload gateway accepting rich text/Markdown, multi-page PDF
+documents, and PNG/JPEG promotional graphics (including OCR text inside
+images).
+Detect inconsistent tone, language, facts,
+claims, visual usage & accessibility
+4 Parallel Static Workers + Branched RAG covering all 6 dimensions
+simultaneously in under 3 seconds end-to-end.
+Explain why an issue was flagged and
+identify the guideline or source involved
+Every flag displays a structured Inspector Card citing the exact PDF document
+name, page number, section heading, or Fact ID (e.g., "Brand Book v2, Page 7,
+Section 4.2").
+Suggest corrections without
+automatically overriding human
+decisions
+Non-destructive side-by-side diff suggestions; creators explicitly click [Accept],
+[Edit], or [Override with Comment] – the AI never overwrites content silently.
+Support comments, approvals, revision
+history & role-based workflows
+Role-based workspaces (Creator, Reviewer, Manager) with inline comment
+threads, version snapshots (v1, v2, v3), and status transitions (Draft → In Review
+→ Changes Requested → Approved).
+Identify recurring problems and provide
+useful governance insights over time
+Governance Insights Analytics Dashboard visualizing top violated rules, recurring
+terminology mistakes, and "Ambiguity Hotspots" where creators frequently
+override a rule.
+Protect confidential brand materials &
+disclose AI/external services
+Delta-Only snippet transmission, 1-click Local/Offline LLM mode (Ollama), and
+explicit AI attribution badges on every generated review card.
+5.2 The Three Named Improvements (Tracked Across Rounds 2 & 3)
+To directly align with the Round 2 (15 pts) and Round 3 (20 pts) judging rubrics, Team Xnihilo defines three
+high-impact improvements upfront:
+1
+Improvement 1 – Centralized Gateway Web Portal: a clean, lightning-fast web app where creators drop
+documents/images for instant RAG audit without needing complex browser extensions.
+2
+Improvement 2 – Deterministic Visual & WCAG Accessibility Engine: combines OpenCV/Pillow
+K-Means color clustering (ΔE color distance against approved Hex palettes), perceptual logo hashing,
+EasyOCR banner text scanning, and mathematical WCAG 2.1 AA/AAA contrast verification.
+3
+Improvement 3 – Confidential Local-Edge Privacy Mode & Governance Ambiguity Detector: lets
+organisations toggle from Cloud Gemini APIs to 100% local execution (Ollama / WebLLM) for sensitive
+pre-release materials, while automatically flagging brand guidelines that trigger high creator override rates as
+"Unclear Guidelines Needs Revision."
+
+
+=== PAGE 9 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 9
+5.3 100% Free-Tier ($0 Cost) Technology Stack
+Architecture Layer
+Technologies & Libraries
+Purpose & Technical Justification
+Frontend Web
+Portal
+Next.js (React), TypeScript, Tailwind CSS,
+Shadcn UI, Recharts (hosted on Vercel Free
+Tier)
+Delivers a responsive side-by-side diff editor, Manager
+approval queue, version history viewer, and
+Governance Insights analytics charts.
+Backend API Server
+Python 3.11, FastAPI, asyncio (hosted on
+HuggingFace Spaces Docker / Render Free
+Tier)
+Orchestrates parallel static workers, exposes REST
+endpoints (/upload-guidelines, /audit-content,
+/approve-draft, /analytics) for the web portal.
+Branched RAG &
+Embeddings
+ChromaDB / Qdrant Cloud (Free Tier),
+Google Gemini Text Embeddings /
+BAAI/bge-small-en-v1.5, PyMuPDF (fitz)
+Extracts and indexes unstructured Brand Guidelines
+PDFs with exact page/section metadata for
+zero-hallucination citations.
+4 Parallel Static
+Workers
+Python re, Aho-Corasick, textstat, Pillow,
+OpenCV (cv2), imagehash, EasyOCR,
+wcag-contrast-ratio
+Executes deterministic, zero-LLM-cost checks for
+banned terms, reading complexity, Hex palette Delta-E
+distance, logo usage, and WCAG contrast.
+Delta-Only LLM
+Synthesis
+Google Gemini 2.5 Flash / Pro API (Google
+AI Studio Free Tier) + Ollama (local
+confidential fallback)
+Processes only flagged snippets + retrieved RAG rules
+to generate human-friendly explanations and
+intent-preserving rewrites.
+Database, Auth &
+Audit Logs
+Supabase (Free Tier PostgreSQL + Auth +
+Storage)
+Stores Approved Facts tables, Role-Based Access
+Control (Creator/Reviewer/Manager), inline
+comments, revision history, and violation telemetry.
+AI-Assisted
+Development
+Workflow
+Google Gemini Models + Antigravity IDE
+(used strictly within the official build window
+with Human-in-the-Loop testing)
+Accelerates boilerplate generation, UI scaffolding, and
+unit test creation while every team member manually
+tests and verifies all logic.
+5.4 Data Sources & External Integrations
+
+Primary Data Sources: Organisation-uploaded Brand Guideline PDFs, Approved Factual Claims CSV/SQL
+tables, Banned & Preferred Terminology JSON dictionaries, Approved Brand Hex Palette definitions, and
+Official Logo/Asset packs (plus synthetic benchmark brand kits created by Team Xnihilo for judge testing).
+
+Integrations: (1) Google Gemini API for multimodal reasoning and embeddings; (2) Supabase PostgreSQL for
+persistent workflow state and user management; and (3) FastAPI REST Endpoints connecting the Next.js
+frontend to the RAG and static audit engines.
+
+
+=== PAGE 10 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 10
+5.5 Visual Illustration 3: Central Web Portal Review Workflow Wireframe
+Illustration 3
+ Central web portal – review workflow and approval queue wireframe (Creator view on the left, Manager view on the right).
+Creator Submission & Audit View
+Manager Review & Approval View
+Document: "Q4_Product_Launch_Release.pdf" | Status: [In
+Review – v2] | Privacy Mode: [Gemini 2.5 Flash Cloud / Local
+Ollama Toggle]
+Manager Queue: 3 Pending Drafts | Active Filter: [Requires
+Sign-Off]
+Highlighted Draft Editor: "Our #1 AI platform [FLAG 1:
+Unverified Claim] is super cheap [FLAG 2: Banned Term &
+Tone] and cuts costs by 99.9% [FLAG 3: Fact Contradiction]."
++ Uploaded Banner_v1.png [FLAG 4: Off-Brand Hex #FF0055
+& WCAG Contrast 2.8:1 FAIL]
+Side-by-Side Diff Compare: Original Creator Text vs.
+AI-Suggested Compliant Rewrite with highlighted changes and
+diff markers.
+Selected Flag #3 Inspector: Issue: unsupported statistical
+claim ("99.9%"). Cited Source: Approved Fact Sheet ID #F-104
+("Verified 42% average cost reduction in 2026 study") & Brand
+Guide p.12, Sec 3.1. Suggested Rewrite: "...reduces operational
+costs by an average of 42%." AI Disclosure: Verified by Static
+Fact Worker #2 + Rewritten by Gemini 2.5 Flash.
+Collaboration Panel: Inline comment threads between Creator
+and Manager; Revision History timeline (v1 → v2); Override
+Justification Log for intentional stylistic choices.
+Creator Actions: [Accept Rewrite] [Modify Manually]
+[Override with Justification Comment] → Submit to Manager
+Manager Actions: [Add Comment] [Request Changes]
+[Approve for Publication] → Logs telemetry to Governance
+Analytics
+
+
+=== PAGE 11 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 11
+6. RESPONSIBLE-DESIGN CONSIDERATIONS: PRIVACY, SECURITY
+& HUMAN OVERSIGHT
+ 1. Protecting Confidential Brand Materials
+Pre-release product announcements and embargoed campaigns require strict data protection. First, our Delta-Only
+Architecture ensures that full confidential documents do not need to be sent to external LLMs – only isolated
+sentences flagged by local static workers are transmitted. Second, organisations can switch on Confidential Local
+Mode (Ollama / WebLLM) with one click, keeping 100% of embeddings, static checks, and LLM synthesis inside
+their own local hardware with zero external network calls.
+2. Explicit Disclosure of AI & External Services (Rule 7 & Submission Integrity)
+
+In-Product Disclosure: Every audit card clearly displays which deterministic worker flagged the issue and
+which AI model (e.g., Google Gemini 2.5 Flash or Local Ollama) generated the suggested correction, along
+with the confidence score and source citation.
+
+Development-Time AI & Tool Disclosure: During the official competition build window, Team Xnihilo will
+use Google Gemini models and Antigravity available models/IDE tools to accelerate code generation, UI
+component scaffolding, and debugging. In strict compliance with our Human-in-the-Loop (HITL) engineering
+policy, no AI-generated code is blindly committed: every API route, RAG pipeline, static algorithm, and UI
+component is manually reviewed, integration-tested, and verified by the responsible team member.
+3. Human Oversight & Non-Destructive Control
+Zuard is designed as a collaborative co-pilot, never an automated censor. The platform never
+auto-overwrites creator text or blocks publication without human review. Creators can exercise Override with
+Justification when breaking a stylistic rule intentionally (e.g., a creative campaign slogan), passing their reasoning
+directly to the human Brand Manager for final judgment.
+4. Security, Access Control & Accessibility
+Role-Based Access Control (Creator, Reviewer, Manager) and Supabase Row-Level Security (RLS) isolate
+organisational brand vaults and audit logs, while our own web interface adheres to WCAG 2.1 AA contrast and
+keyboard navigation standards.
+
+
+=== PAGE 12 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 12
+7. DEVELOPMENT PLAN, ROLE ALLOCATION & EXPECTED
+IMPACT
+7.1 Team Xnihilo Role Allocation & Individual Accountability
+Team Member
+Designated Role
+Specific Technical Responsibilities & HITL Testing Scope
+Subhajit Das
+Team Leader – RAG & AI
+Architecture
+Leads overall system architecture, builds the Branched Multimodal RAG
+ingestion and retrieval pipeline (PyMuPDF + ChromaDB/Qdrant + Gemini
+Embeddings), engineers the Delta-Only Gemini Synthesizer prompts, and
+leads end-to-end Human-in-the-Loop integration testing.
+Sambu
+Chowdhury
+Core AI Engineer – RAG &
+Static Audit Pipeline
+Builds the Approved Facts SQL/Hybrid verification engine and implements
+the 4 Parallel Static Pre-Check Workers (Regex/Aho-Corasick terminology
+scanner, NLP claim extractor, OpenCV/Pillow K-Means Hex Delta-E
+visual checker, EasyOCR banner scanner, and deterministic WCAG 2.1
+contrast math).
+Rana Tarafdar
+Full-Stack Engineer –
+Frontend & FastAPI
+Backend Bridge
+Develops the FastAPI asynchronous REST routes (/upload-guidelines,
+/audit-content, /approve-draft, /analytics), configures the Supabase
+PostgreSQL schema (RBAC roles, revision history snapshots, inline
+comments, and telemetry logs), and connects Frontend API state.
+Mousumi Bag
+UI/UX Engineer – Frontend
+Review Portal & Approval
+Workflow
+Builds the Next.js Interactive Side-by-Side Diff Editor, Manager Approval
+Queue UI, revision history viewer, and Governance Insights Analytics
+dashboard charts.
+7.2 Phased Development Plan (Strictly Within Official Build Window)
+Phase
+Focus
+Details
+Phase 0
+Pre-Build Discovery & Planning
+Completed prior to build window
+per Rule 2
+Conducted user surveys, manager interviews, problem validation, architecture
+design, and prepared this Round 1 Plan. Zero product source code was written
+prior to the official build window (Rules 1 & 4).
+Phase 1
+Core Foundation & Branched
+RAG
+Round 2 Build – Part A
+Set up FastAPI + Next.js repository; implement Brand Vault ingestion (PDF
+chunking, Gemini embeddings, Approved Facts SQL table, and Hex/Logo rule
+storage) using Gemini & Antigravity coding assistance with continuous manual
+unit testing.
+Phase 2
+4 Parallel Static Workers &
+Delta-Only Gemini Synthesis
+Round 2 Build – Part B
+Implement asyncio.gather parallel execution for the 4 static workers + Branched
+RAG lookup + single-pass Gemini 2.5 Flash synthesis returning structured
+JSON citations and rewrites.
+Phase 3
+Role-Based Review Workflow &
+MVP Deployment
+Round 2 Deliverable
+Connect the Interactive Diff Editor, Accept/Modify/Override controls, Manager
+Approval sign-off, and revision history; deploy live judge-accessible MVP link
+and public Git repository.
+Phase 4
+Stress Testing & Final Polish
+Round 3 Finish
+Deliver the complete OpenCV/WCAG visual accessibility suite, Confidential
+Local Mode toggle, and Governance Insights Dashboard; conduct structured
+user testing, log reliability improvements, and record the final demonstration.
+
+
+=== PAGE 13 ===
+Zuard  |  Team Xnihilo  |  Inkloom AI Challenge – Round 1 Plan
+Page 13
+7.3 Expected Organisational Impact
+ 70%
+Faster Review Turnaround
+Pre-screening drafts in ~2.5 seconds eliminates manual line-by-line manager fact-checking and hex-code
+inspection.
+ 85%
+Lower AI Compute & Server Load
+Filtering content through 4 deterministic static workers and sending only flagged deltas to a single Gemini
+call prevents server bottlenecks and rate-limit failures.
+ 100%
+Citation Transparency & Compliance
+Every flagged issue is backed by an exact page/section citation or mathematical WCAG/Hex proof,
+empowering creators while protecting brand trust.

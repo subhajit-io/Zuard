@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-03-20",
+  "terms": [
+    {
+      "term": "corporate bureaucracy",
+      "category": "anti_enterprise_slang",
+      "severity": "WARNING",
+      "preferred": "complex workflows",
+      "rationale": "Excessively hostile tone; keep messaging positive and empowering.",
+      "cited_doc": "Consumer Brand Book 2026",
+      "page": 2,
+      "section": "Sec 1.1: Engaging Creator Voice"
+    },
+    {
+      "term": "super cheap",
+      "category": "pricing_tone",
+      "severity": "CRITICAL",
+      "preferred": "accessible or free-to-start",
+      "rationale": "Devalues creative quality. Highlight creator empowerment.",
+      "cited_doc": "Consumer Brand Book 2026",
+      "page": 2,
+      "section": "Sec 1.1: Engaging Creator Voice"
+    },
+    {
+      "term": "unlimited free",
+      "category": "exaggerated_offer",
+      "severity": "CRITICAL",
+      "preferred": "generous free starter tier (10 exports/mo)",
+      "rationale": "Free tier has a 10 export monthly quota (Fact #FC-203). False advertising.",
+      "cited_doc": "Consumer Brand Book 2026",
+      "page": 5,
+      "section": "Sec 3.0: Consumer Tier Specifications"
+    }
+  ]
+}

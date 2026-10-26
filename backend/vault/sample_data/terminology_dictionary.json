@@ -1,0 +1,146 @@
+{
+  "version": "2.4.0",
+  "last_updated": "2026-03-25",
+  "terms": [
+    {
+      "term": "super cheap",
+      "category": "pricing_tone",
+      "severity": "CRITICAL",
+      "preferred": "cost-effective",
+      "rationale": "Devalues enterprise positioning. Use value-oriented terminology instead.",
+      "cited_doc": "Brand Guide v2",
+      "page": 4,
+      "section": "Sec 1.3: Pricing Persona & Vocabulary"
+    },
+    {
+      "term": "cheap",
+      "category": "pricing_tone",
+      "severity": "WARNING",
+      "preferred": "accessible or budget-friendly",
+      "rationale": "Suggests low product quality. Replace with enterprise-grade value descriptors.",
+      "cited_doc": "Brand Guide v2",
+      "page": 4,
+      "section": "Sec 1.3: Pricing Persona & Vocabulary"
+    },
+    {
+      "term": "guaranteed",
+      "category": "legal_risk",
+      "severity": "CRITICAL",
+      "preferred": "designed to provide or backed by our SLA commitment",
+      "rationale": "Creates absolute legal liability under pre-publication advertising standards.",
+      "cited_doc": "Brand Guide v2",
+      "page": 7,
+      "section": "Sec 2.1: Legal & Regulatory Disclaimers"
+    },
+    {
+      "term": "best in the world",
+      "category": "unsubstantiated_superlative",
+      "severity": "CRITICAL",
+      "preferred": "industry-leading or award-winning",
+      "rationale": "Unsubstantiated global superlative without accredited auditor citation.",
+      "cited_doc": "Brand Guide v2",
+      "page": 7,
+      "section": "Sec 2.2: Verifiable Market Claims"
+    },
+    {
+      "term": "#1",
+      "category": "unsubstantiated_superlative",
+      "severity": "CRITICAL",
+      "preferred": "premier or top-tier",
+      "rationale": "Requires formal analyst certification (e.g., Gartner/IDC) to claim rank #1.",
+      "cited_doc": "Brand Guide v2",
+      "page": 8,
+      "section": "Sec 2.2: Verifiable Market Claims"
+    },
+    {
+      "term": "number one",
+      "category": "unsubstantiated_superlative",
+      "severity": "CRITICAL",
+      "preferred": "leading or recognized",
+      "rationale": "Requires formal analyst certification to claim rank #1.",
+      "cited_doc": "Brand Guide v2",
+      "page": 8,
+      "section": "Sec 2.2: Verifiable Market Claims"
+    },
+    {
+      "term": "revolutionary",
+      "category": "hyperbolic_buzzword",
+      "severity": "WARNING",
+      "preferred": "innovative or advanced",
+      "rationale": "Overused buzzword that damages technical credibility.",
+      "cited_doc": "Brand Guide v2",
+      "page": 5,
+      "section": "Sec 1.4: Modern Technical Tone"
+    },
+    {
+      "term": "miracle",
+      "category": "hyperbolic_buzzword",
+      "severity": "CRITICAL",
+      "preferred": "high-impact solution",
+      "rationale": "Unprofessional sensationalism strictly banned across all enterprise publications.",
+      "cited_doc": "Brand Guide v2",
+      "page": 5,
+      "section": "Sec 1.4: Modern Technical Tone"
+    },
+    {
+      "term": "hack",
+      "category": "informal_slang",
+      "severity": "WARNING",
+      "preferred": "technique or workflow optimization",
+      "rationale": "Colloquial slang inappropriate for formal customer-facing communications.",
+      "cited_doc": "Brand Guide v2",
+      "page": 6,
+      "section": "Sec 1.5: Professional Editorial Standards"
+    },
+    {
+      "term": "BrandX Cloud v1",
+      "category": "deprecated_product",
+      "severity": "CRITICAL",
+      "preferred": "Zuard Enterprise Platform",
+      "rationale": "BrandX Cloud v1 was formally retired in Q4 2025. Must use new official nomenclature.",
+      "cited_doc": "Brand Guide v2",
+      "page": 10,
+      "section": "Sec 3.4: Nomenclature & Product Lifecycles"
+    },
+    {
+      "term": "legacy sync",
+      "category": "deprecated_feature",
+      "severity": "WARNING",
+      "preferred": "Branched RAG Gateway",
+      "rationale": "Legacy sync engine was replaced by the Branched Multimodal RAG pipeline.",
+      "cited_doc": "Brand Guide v2",
+      "page": 10,
+      "section": "Sec 3.4: Nomenclature & Product Lifecycles"
+    },
+    {
+      "term": "cheap deal",
+      "category": "dynamic_guideline",
+      "severity": "WARNING",
+      "preferred": "strategic enterprise investment",
+      "rationale": "Explicitly replaced in Section 1.0: Cloud Infrastructure Guidelines.",
+      "cited_doc": "_dynamic_sample.txt",
+      "page": 1,
+      "section": "Section 1.0: Cloud Infrastructure Guidelines"
+    },
+    {
+      "term": "clunky",
+      "category": "banned_terms",
+      "severity": "CRITICAL",
+      "preferred": "cost-effective or enterprise-grade",
+      "rationale": "Declared strictly forbidden in Section 1.0: Cloud Infrastructure Guidelines.",
+      "cited_doc": "_dynamic_sample.txt",
+      "page": 1,
+      "section": "Section 1.0: Cloud Infrastructure Guidelines"
+    },
+    {
+      "term": "slow sync",
+      "category": "banned_terms",
+      "severity": "CRITICAL",
+      "preferred": "professional alternative",
+      "rationale": "Declared strictly forbidden in Section 1.0: Cloud Infrastructure Guidelines.",
+      "cited_doc": "_dynamic_sample.txt",
+      "page": 1,
+      "section": "Section 1.0: Cloud Infrastructure Guidelines"
+    }
+  ]
+}

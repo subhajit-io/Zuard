@@ -1,0 +1,97 @@
+{
+  "brand_name": "Zuard",
+  "version": "1.0",
+  "color_palette": {
+    "primary": {
+      "name": "Brand Navy",
+      "hex": "#0F172A",
+      "rgb": [
+        15,
+        23,
+        42
+      ],
+      "usage": "Primary typography, dark backgrounds, high-emphasis headers"
+    },
+    "secondary": {
+      "name": "Electric Blue",
+      "hex": "#2563EB",
+      "rgb": [
+        37,
+        99,
+        235
+      ],
+      "usage": "Primary buttons, call-to-actions, active indicators"
+    },
+    "accent": {
+      "name": "Cyan Accent",
+      "hex": "#06B6D4",
+      "rgb": [
+        6,
+        182,
+        212
+      ],
+      "usage": "Highlight badges, progress meters, data visualization strokes"
+    },
+    "neutral_dark": {
+      "name": "Slate 800",
+      "hex": "#1E293B",
+      "rgb": [
+        30,
+        41,
+        59
+      ],
+      "usage": "Card borders, secondary container surfaces"
+    },
+    "neutral_light": {
+      "name": "Slate 50",
+      "hex": "#F8FAFC",
+      "rgb": [
+        248,
+        250,
+        252
+      ],
+      "usage": "Light backgrounds, card fill"
+    },
+    "pure_white": {
+      "name": "Pure White",
+      "hex": "#FFFFFF",
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "usage": "Text on dark containers, clean backgrounds"
+    }
+  },
+  "color_audit": {
+    "delta_e_threshold": 12.0,
+    "flagged_prohibited_colors": [
+      {
+        "hex": "#FF0055",
+        "name": "Hot Magenta/Pink",
+        "reason": "Competitor signature shade; forbidden on all public banners."
+      },
+      {
+        "hex": "#FFFF00",
+        "name": "Raw Electric Yellow",
+        "reason": "Lacks brand authority and causes contrast failures."
+      }
+    ]
+  },
+  "wcag_accessibility": {
+    "standard": "WCAG 2.1",
+    "aa_normal_text_min_contrast": 4.5,
+    "aa_large_text_min_contrast": 3.0,
+    "aaa_normal_text_min_contrast": 7.0,
+    "alt_text_required": true,
+    "min_alt_text_length": 15
+  },
+  "logo_guidelines": {
+    "standard_horizontal_ratio": 3.5,
+    "ratio_tolerance_pct": 5.0,
+    "min_clear_space_px": 16,
+    "source_doc": "Brand Book v2",
+    "page": 15,
+    "section": "Sec 5.2: Visual Asset Protection & Geometry"
+  }
+}

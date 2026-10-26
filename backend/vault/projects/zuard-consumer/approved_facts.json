@@ -1,0 +1,41 @@
+[
+  {
+    "fact_id": "FC-201",
+    "category": "market_traction",
+    "metric_key": "mobile_creators",
+    "approved_claim": "Over 5 million active mobile creators using the Zuard Mobile suite",
+    "approved_value": "5M+",
+    "unit": "count",
+    "source_doc": "Consumer_Brand_Book_2026.pdf",
+    "page_number": 3,
+    "section": "Sec 1.2: Creator Community Scale",
+    "verified_date": "2026-03-01",
+    "notes": "Verified active monthly mobile app installations."
+  },
+  {
+    "fact_id": "FC-202",
+    "category": "performance",
+    "metric_key": "audio_sync_latency",
+    "approved_claim": "Ultra-low 50ms real-time audio sync latency on iOS and Android",
+    "approved_value": "50ms",
+    "unit": "latency",
+    "source_doc": "Consumer_Brand_Book_2026.pdf",
+    "page_number": 4,
+    "section": "Sec 2.1: Mobile Engine Benchmarks",
+    "verified_date": "2026-03-05",
+    "notes": "Measured on standard 5G networks."
+  },
+  {
+    "fact_id": "FC-203",
+    "category": "pricing",
+    "metric_key": "free_tier_exports",
+    "approved_claim": "Free creator plan includes 10 full-resolution video exports per month",
+    "approved_value": "10 exports/mo",
+    "unit": "exports",
+    "source_doc": "Consumer_Brand_Book_2026.pdf",
+    "page_number": 5,
+    "section": "Sec 3.0: Consumer Tier Specifications",
+    "verified_date": "2026-03-10",
+    "notes": "Never claim unlimited free exports without Pro subscription."
+  }
+]

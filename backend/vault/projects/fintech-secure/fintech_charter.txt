@@ -1,0 +1,37 @@
+=== PAGE 1 ===
+FINTECH SECURE BANKING COMPLIANCE CHARTER 2026
+Institutional Regulatory & Brand Standards
+
+Section 1.0: Brand Tone & Voice
+FinTech Secure is an institutional digital banking infrastructure platform. Tone must be authoritative, risk-conscious, and precise. Avoid sensationalism or consumer slang.
+Reading grade level must remain between Grade 9 and Grade 11.
+Terms like "unhackable", "instant cash" are strictly forbidden. Replace "unhackable" with "bank-grade encrypted", and replace "instant cash" with "accelerated settlement".
+The legacy architecture "legacy vault" is permanently retired; use "Zero-Trust Enclave" instead.
+Terms like "dirt cheap", "super cheap" degrade institutional trust and are strictly prohibited; use "cost-efficient enterprise tier".
+
+=== PAGE 2 ===
+Section 2.0: Verified Factual Claims & Audit Metrics
+All commercial literature must cite strictly verified statistics from accredited third-party audits:
+1. "Verified 84% reduction in payment fraud incidents demonstrated in 2026 enterprise audit (Study ID #F-FT-301)". Never claim 99%, 99.9%, or 100% fraud immunity.
+2. "Guaranteed 99.99% core ledger transaction availability backed by Tier-4 SLA (SLA ID #F-FT-302)".
+3. "Processing over $10 billion in annual transaction volume across 40 countries (Metric ID #F-FT-303)".
+Unverified claims asserting "#1 ranking" without accredited analyst certification are strictly prohibited.
+
+=== PAGE 3 ===
+Section 3.0: Visual Identity & Color Standards
+Official Brand Palette:
+- Primary Brand: Deep Forest Emerald (#064E3B)
+- Secondary Brand: Sovereign Gold (#D97706)
+- Accent Tint: Mint Frost (#D1FAE5)
+- Neutral Dark: Obsidian Dark (#022C22)
+- Neutral Light: Pure White (#FFFFFF)
+Prohibited Colors:
+Vibrant alert shades such as Neon Crimson (#FF1E56) conflict with institutional risk messaging and are banned from marketing banners.
+Color Delta-E tolerance is fixed at 10.0.
+
+=== PAGE 4 ===
+Section 4.0: WCAG 2.1 Accessibility Requirements
+All digital promotional assets, cards, and data tables must conform to WCAG 2.1 AA contrast standards:
+- Normal text minimum contrast ratio: 4.5:1 against background.
+- High-priority financial disclosures must target AAA standard (7.0:1).
+- All charts, transaction flows, and badges must provide descriptive alt-text with at least 15 characters.

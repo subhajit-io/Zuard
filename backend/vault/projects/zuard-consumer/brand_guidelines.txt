@@ -1,0 +1,26 @@
+=== PAGE 1 ===
+ZUARD CONSUMER & MOBILE BRAND BOOK 2026
+Creative Governance for Mobile App & Social Creators
+
+Section 1.0: Consumer Persona
+Zuard Consumer is lively, inspiring, fast, and empowering. We design for digital creators, streamers, and mobile video editors who value agility, expression, and joy.
+
+=== PAGE 2 ===
+Section 1.1: Engaging Creator Voice
+Keep sentence structures snappy and energetic. Reading grade level should be between Grade 6 and Grade 9. Avoid dry corporate jargon like 'enterprise operational overhead'. Terms like 'super cheap' degrade our design reputation; use 'accessible' or 'budget-friendly'.
+
+=== PAGE 3 ===
+Section 1.2: Creator Community Scale
+Our verified benchmark is: 'Over 5 million active mobile creators using the Zuard Mobile suite (Fact #FC-201)'. Do not claim 10M or 20M without updated product analytics sign-off.
+
+=== PAGE 4 ===
+Section 2.1: Mobile Engine Benchmarks
+Mobile audio/video sync achieves a certified 50ms latency across 5G networks (Fact #FC-202).
+
+=== PAGE 5 ===
+Section 3.0: Consumer Tier Specifications
+The Free starter plan provides 10 full-resolution exports per month. Do not market the app as 'unlimited free forever' as that misleads users regarding cloud processing limits.
+
+=== PAGE 6 ===
+Section 4.0: Visual Identity & Color Energy
+Zuard Consumer uses an energetic color palette: Electric Violet (#8B5CF6) and Sunset Amber (#F59E0B) complemented by Neon Teal (#10B981). Muddy earth tones (#556B2F) are strictly prohibited.
