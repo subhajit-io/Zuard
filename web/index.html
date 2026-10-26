@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zuard — Real-Time Brand Governance & Pre-Screening Engine</title>
+  <meta name="description" content="Sub-5ms deterministic pre-screening, Branched RAG compliance citations, and zero-hallucination governance for enterprise marketing and digital copy.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Ambient background lighting glow -->
+  <div class="bg-glow-orb orb-primary" aria-hidden="true"></div>
+  <div class="bg-glow-orb orb-secondary" aria-hidden="true"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-mark" title="Zuard Brand Governance Shield">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <div class="brand-title-wrap">
+          <h1 class="brand-title">Zuard</h1>
+          <span class="version-tag">v2.4 Enterprise</span>
+        </div>
+        <span class="brand-subtitle">Brand Governance & Pre-Screening Engine</span>
+      </div>
+
+      <!-- Quick Project Workspace Switcher in Header -->
+      <div class="project-selector-wrap" title="Current Brand Workspace">
+        <div class="project-label-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span class="project-selector-label">Workspace:</span>
+        </div>
+        <div class="project-control-group">
+          <select id="project-selector" class="project-select-dropdown" aria-label="Select Project Workspace">
+            <option value="zuard-enterprise">Zuard Enterprise (B2B)</option>
+            <option value="zuard-consumer">Zuard Consumer & Mobile</option>
+            <option value="fintech-secure">FinTech Secure Banking & Ledger</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btn-open-new-project-modal" title="Create New Project Workspace">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>+ New</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="nav-tab active" data-tab="review-portal" id="tab-btn-review" title="Step-by-step document review and compliance checks">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Audit & Review</span>
+        <span class="nav-badge" id="nav-issues-badge" style="display: none;">0</span>
+      </button>
+      <button class="nav-tab" data-tab="brand-vault" id="tab-btn-vault" title="Inspect brand rules, approved facts, and color palettes">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+        <span>Guidelines & Rules</span>
+      </button>
+      <button class="nav-tab" data-tab="activity-log" id="tab-btn-activity" title="View chronological log of uploads, edits, and decisions">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Activity Log</span>
+      </button>
+      <button class="nav-tab" data-tab="governance-insights" id="tab-btn-insights" title="View compliance trends, metrics, and ambiguity hotspots">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <span>Governance Insights</span>
+      </button>
+    </nav>
+
+    <!-- Header Controls -->
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" id="btn-open-guide-modal" title="View beginner-friendly architecture & workflow guide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>How it Works</span>
+      </button>
+
+      <div class="privacy-toggle-container" title="Toggle between confidential zero-cloud edge verification and cloud Gemini reasoning">
+        <label class="switch">
+          <input type="checkbox" id="privacy-toggle" aria-label="Toggle Privacy Mode">
+          <span class="slider round"></span>
+        </label>
+        <div class="privacy-text-wrap">
+          <span class="privacy-label" id="privacy-status-text">Confidential Local Mode</span>
+          <span class="privacy-sub">Zero-Cloud Leakage</span>
+        </div>
+      </div>
+
+      <div class="user-role-badge" title="Active reviewer identity">
+        <span class="role-dot"></span>
+        <span id="active-role-text">Reviewer: Team Xnihilo</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-container">
+    
+    <!-- ===================================================================== -->
+    <!-- TAB 1: AUDIT & REVIEW PORTAL (LOGICAL STEP-BY-STEP SECTIONS)          -->
+    <!-- ===================================================================== -->
+    <section id="tab-review-portal" class="tab-content active" aria-labelledby="tab-btn-review">
+      
+      <!-- Stepper / Quick Navigation Banner -->
+      <nav class="workflow-stepper" aria-label="Audit Workflow Navigation">
+        <div class="stepper-track">
+          <a href="#section-workspace" class="step-item" id="step-nav-workspace">
+            <span class="step-num">1</span>
+            <span class="step-text">Workspace</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-upload" class="step-item" id="step-nav-upload">
+            <span class="step-num">2</span>
+            <span class="step-text">Upload</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-editor" class="step-item" id="step-nav-editor">
+            <span class="step-num">3</span>
+            <span class="step-text">Editor</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-precheck" class="step-item" id="step-nav-precheck">
+            <span class="step-num">4</span>
+            <span class="step-text">Pre-Check</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-results" class="step-item" id="step-nav-results">
+            <span class="step-num">5</span>
+            <span class="step-text">Compliance</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-review" class="step-item" id="step-nav-review">
+            <span class="step-num">6</span>
+            <span class="step-text">Human Review</span>
+          </a>
+          <span class="step-divider">&rarr;</span>
+          <a href="#section-submission" class="step-item" id="step-nav-submission">
+            <span class="step-num">7</span>
+            <span class="step-text">Submit</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- SECTION 1: WORKSPACE MANAGEMENT -->
+      <section id="section-workspace" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 1</span>
+            <h2 class="section-title">Brand Workspace</h2>
+            <span class="section-tooltip" title="Workspaces keep guidelines, facts, and rules isolated per brand or product line.">ℹ️</span>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-primary" id="btn-create-project-trigger" title="Create a new isolated brand workspace">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Create New Project</span>
+            </button>
+          </div>
+        </div>
+        <p class="section-desc">Select an existing brand workspace or create a new one to apply dedicated guidelines, verified facts, and tone rules.</p>
+
+        <!-- Active Workspace Summary & Switcher Cards -->
+        <div class="workspace-panel-grid">
+          <div class="card active-workspace-card" id="active-workspace-card">
+            <div class="workspace-card-header">
+              <div class="workspace-id-badge">
+                <span class="pulse-dot"></span>
+                <span id="active-project-slug">zuard-enterprise</span>
+              </div>
+              <span class="status-badge status-active">Active Workspace</span>
+            </div>
+            <h3 class="workspace-name" id="active-project-name">Zuard Enterprise (B2B)</h3>
+            <p class="workspace-desc" id="active-project-desc">High-compliance enterprise brand governance, strict corporate SLAs, and auditable metrics.</p>
+            <div class="workspace-meta-row">
+              <div class="meta-tag">
+                <span class="meta-label">Persona:</span>
+                <strong id="active-project-persona">Authoritative &amp; Formal Enterprise</strong>
+              </div>
+              <div class="meta-tag">
+                <span class="meta-label">Rules:</span>
+                <strong id="active-project-rule-count">14 Rules &bull; 6 Facts</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Workspace Picker Grid -->
+          <div class="card workspace-picker-card">
+            <div class="card-header-compact">
+              <span class="card-label">Switch Brand Workspace:</span>
+              <span class="card-sublabel">Click any project to switch instantly</span>
+            </div>
+            <div class="workspace-chips-grid" id="workspace-chips-grid">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: DOCUMENT UPLOAD -->
+      <section id="section-upload" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 2</span>
+            <h2 class="section-title">Document Upload</h2>
+            <span class="section-tooltip" title="Upload marketing drafts, landing pages, press releases, or visual banners for screening.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">Easily upload your copy or asset file. Zuard will extract the content and prepare it for automated compliance screening.</p>
+
+        <div class="upload-zone-wrapper">
+          <!-- Dropzone -->
+          <div class="document-dropzone" id="document-dropzone" tabindex="0" role="button" aria-label="Drag and drop or click to upload document">
+            <div class="dropzone-icon-circle">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="dropzone-text-block">
+              <h3 class="dropzone-headline">Drag &amp; drop your draft document here, or click to browse</h3>
+              <p class="dropzone-subtext">Upload draft press releases, product sheets, social announcements, or banner assets.</p>
+              <div class="dropzone-specs-row">
+                <span class="spec-pill"><strong>Supported Formats:</strong> PDF (.pdf), Plaintext (.txt), Markdown (.md), Images (.png, .jpg, .webp)</span>
+                <span class="spec-pill spec-limit"><strong>File Size Limit:</strong> Max 25 MB</span>
+              </div>
+            </div>
+            <input type="file" id="document-file-input" accept=".pdf,.txt,.md,.png,.jpg,.jpeg,.webp" style="display: none;">
+            <button type="button" class="btn btn-secondary" id="btn-browse-document-file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Browse Files</span>
+            </button>
+          </div>
+
+          <!-- Selected File Card (shown when a file is selected) -->
+          <div class="selected-file-card" id="selected-file-card" style="display: none;">
+            <div class="file-card-left">
+              <div class="file-type-icon" id="file-icon-display">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="file-details">
+                <div class="file-name-row">
+                  <span class="file-name" id="selected-file-name">filename.txt</span>
+                  <span class="file-size-badge" id="selected-file-size">0 KB</span>
+                  <span class="file-status-badge" id="selected-file-status">Ready</span>
+                </div>
+                <span class="file-hint" id="selected-file-hint">File contents loaded into Document Editor below.</span>
+              </div>
+            </div>
+            <div class="file-card-actions">
+              <button class="btn btn-secondary btn-xs" id="btn-reload-file-content" title="Reload raw file text into editor">
+                <span>Reload to Editor</span>
+              </button>
+              <button class="btn btn-ghost btn-xs text-red" id="btn-remove-selected-file" title="Clear selected file">
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Benchmark Scenario Cards -->
+        <div class="preset-section">
+          <div class="preset-header-row">
+            <div class="preset-title-group">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span class="preset-title">Or load a pre-configured sample scenario:</span>
+            </div>
+            <span class="preset-helper-text">Click any sample below to instantly load real-world test data</span>
+          </div>
+          <div class="preset-cards-grid">
+            <button class="preset-scenario-card active" id="btn-load-sample-1">
+              <div class="scenario-icon-wrap icon-amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-top">
+                  <span class="scenario-name">Plan Benchmark (Q4 Product Launch)</span>
+                  <span class="scenario-tag tag-warning">5 Violations</span>
+                </div>
+                <p class="scenario-desc">Simulates unverified claims (#1 AI, 99.9% cost drop), forbidden terms ("super cheap", "miracle engine"), and WCAG contrast failures.</p>
+              </div>
+            </button>
+
+            <button class="preset-scenario-card" id="btn-load-sample-2">
+              <div class="scenario-icon-wrap icon-emerald">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-top">
+                  <span class="scenario-name">Compliant Corporate Release</span>
+                  <span class="scenario-tag tag-success">100% Gold Standard</span>
+                </div>
+                <p class="scenario-desc">Demonstrates approved corporate phrasing, verified facts (42% cost reduction, 99.95% uptime SLA), and full compliance.</p>
+              </div>
+            </button>
+
+            <button class="preset-scenario-card" id="btn-load-sample-3">
+              <div class="scenario-icon-wrap icon-purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+              </div>
+              <div class="scenario-content">
+                <div class="scenario-top">
+                  <span class="scenario-name">Visual Banner &amp; Accessibility Test</span>
+                  <span class="scenario-tag tag-purple">Creative Audit</span>
+                </div>
+                <p class="scenario-desc">Tests consumer mobile copy, verified creator stats, vivid purple brand palette, and descriptive alt-text verification.</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: DOCUMENT EDITOR -->
+      <section id="section-editor" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 3</span>
+            <h2 class="section-title">Document Editor</h2>
+            <span class="section-tooltip" title="Review, edit, and fine-tune your draft copy or view side-by-side compliance rewrites.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">View and edit your document copy with clearly labeled controls. Switch views to inspect flagged issues or side-by-side diffs.</p>
+
+        <div class="card editor-card">
+          <!-- Document Header Bar with Title Input -->
+          <div class="card-header editor-header-bar">
+            <div class="card-title-group editor-title-field">
+              <label for="doc-title-input" class="field-title-label">
+                <span>Document Title:</span>
+                <span class="badge-required" title="Document title is required for audit registration">* Required</span>
+              </label>
+              <div class="title-input-wrapper">
+                <div class="doc-icon-wrap">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <input type="text" id="doc-title-input" class="doc-title-input" value="Q4_Product_Launch_Release.pdf" placeholder="e.g., Q4_Product_Launch_Release.pdf" required>
+                <span class="status-badge" id="document-status-badge">Draft — v1</span>
+              </div>
+            </div>
+            
+            <div class="editor-actions">
+              <button class="btn btn-secondary btn-sm" id="btn-copy-draft" title="Copy current draft text to clipboard">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-text" title="Clear draft content">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- View Toggle: Raw Draft vs Flagged Markup vs Diff -->
+          <div class="view-switch-bar">
+            <div class="view-pills-group" role="tablist" aria-label="Editor Views">
+              <button class="view-pill active" data-view="editor" role="tab" aria-selected="true" title="Edit draft text directly">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>1. Draft Editor</span>
+              </button>
+              <button class="view-pill" data-view="flagged" role="tab" aria-selected="false" title="View color-coded inline issue tags">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                <span>2. Flagged Annotations</span>
+              </button>
+              <button class="view-pill" data-view="diff" role="tab" aria-selected="false" title="Side-by-side comparison of original vs compliant rewrite">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                <span>3. Side-by-Side Diff</span>
+              </button>
+            </div>
+            <div class="editor-meta-stats">
+              <span id="char-count-badge">0 words &bull; 0 chars</span>
+            </div>
+          </div>
+
+          <!-- Draft Input Textarea -->
+          <div id="view-editor" class="editor-view-panel active">
+            <label for="draft-text" class="sr-only">Draft Copy Text</label>
+            <textarea id="draft-text" class="draft-textarea" placeholder="Paste your marketing draft, press release, social ad copy, or landing page content here to run pre-screening..."></textarea>
+          </div>
+
+          <!-- Flagged Annotations View -->
+          <div id="view-flagged" class="editor-view-panel">
+            <div class="panel-instruction-tip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Click on any highlighted flag tag below to jump directly to its inspector card and cited policy.</span>
+            </div>
+            <div id="flagged-markup-display" class="markup-display-box"></div>
+          </div>
+
+          <!-- Side-by-Side Diff View -->
+          <div id="view-diff" class="editor-view-panel">
+            <div class="diff-actions-header">
+              <div class="diff-legend">
+                <span class="legend-chip legend-red">Original Draft (With Issues)</span>
+                <span class="legend-chip legend-green">Compliant Rewrite (Intent-Preserved)</span>
+              </div>
+              <button class="btn btn-primary btn-xs" id="btn-apply-full-rewrite">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Apply Rewrite to Editor</span>
+              </button>
+            </div>
+            <div class="diff-split-container">
+              <div class="diff-pane">
+                <div class="diff-pane-title">
+                  <span class="pane-tag tag-orig">Original Creator Copy</span>
+                </div>
+                <div id="diff-original-content" class="diff-pane-body"></div>
+              </div>
+              <div class="diff-pane diff-pane-rewrite">
+                <div class="diff-pane-title">
+                  <span class="pane-tag tag-rewrite">Zero-Hallucination Compliant Rewrite</span>
+                </div>
+                <div id="diff-suggested-content" class="diff-pane-body"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Asset & Contrast Accessibility Studio -->
+          <div class="visual-checks-bar">
+            <div class="visual-bar-header">
+              <div class="bar-title-wrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+                <span class="bar-title">Visual &amp; Accessibility Studio</span>
+                <span class="badge-optional">(Optional Creative Check)</span>
+              </div>
+              <span class="studio-subtext">Worker #3 (Color Delta-E) &amp; Worker #4 (WCAG Contrast Math)</span>
+            </div>
+            
+            <div class="visual-inputs-row">
+              <!-- Foreground Color Picker -->
+              <div class="input-field color-field">
+                <label for="fg-color-input">Foreground Text <span class="badge-optional">HEX</span></label>
+                <div class="color-picker-input-wrap">
+                  <input type="color" id="fg-color-picker" value="#FFFFFF" class="color-swatch-picker" aria-label="Foreground Color Picker">
+                  <input type="text" id="fg-color-input" value="#FFFFFF" maxlength="7" spellcheck="false" class="color-hex-text">
+                </div>
+              </div>
+
+              <!-- Background Color Picker -->
+              <div class="input-field color-field">
+                <label for="bg-color-input">Background Fill <span class="badge-optional">HEX</span></label>
+                <div class="color-picker-input-wrap">
+                  <input type="color" id="bg-color-picker" value="#FF0055" class="color-swatch-picker" aria-label="Background Color Picker">
+                  <input type="text" id="bg-color-input" value="#FF0055" maxlength="7" spellcheck="false" class="color-hex-text">
+                </div>
+              </div>
+
+              <!-- Banner Alt Text Input -->
+              <div class="input-field grow">
+                <div class="field-label-row">
+                  <label for="alt-text-input">Banner Image Alt-Text</label>
+                  <span class="alt-quality-chip" id="alt-quality-badge">Needs Improvement</span>
+                </div>
+                <input type="text" id="alt-text-input" value="banner" placeholder="Describe visual asset clearly for screen readers...">
+              </div>
+
+              <!-- Contrast Preview Card -->
+              <div class="input-field contrast-field">
+                <label>WCAG 2.1 Status</label>
+                <div id="contrast-preview-chip" class="contrast-chip" style="background: #FF0055; color: #FFFFFF;" title="Mathematical WCAG 2.1 relative luminance contrast">
+                  Aa (2.8:1 FAIL)
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 4: PRE-CHECK (TRIGGER & SPEED) -->
+      <section id="section-precheck" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 4</span>
+            <h2 class="section-title">Deterministic Pre-Check</h2>
+            <span class="section-tooltip" title="Runs 4 parallel static workers in ~2ms with zero LLM cost before querying any model.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">Run instant deterministic pre-screening across lexical, factual claims, visual palette, and accessibility dimensions.</p>
+
+        <div class="precheck-trigger-card card">
+          <div class="precheck-left">
+            <button class="btn btn-primary btn-run-glow btn-lg" id="btn-run-audit" title="Screen draft with 4 static workers and delta synthesizer (Ctrl + Enter)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Run Pre-Check &amp; Compliance Audit</span>
+              <span class="kbd-shortcut" title="Keyboard Shortcut">Ctrl ↵</span>
+            </button>
+            <span class="precheck-hint">Executes 4 parallel static verification workers in ~2–4ms.</span>
+          </div>
+
+          <div class="precheck-workers-summary">
+            <div class="worker-summary-header">
+              <span class="pulse-dot"></span>
+              <span>4 Parallel Workers Active</span>
+              <span class="worker-speed-badge" id="precheck-speed-badge">Sub-5ms Latency</span>
+            </div>
+            <div class="worker-chips-row">
+              <span class="worker-chip" title="Lexical Terminology & Tone Scanner">🔤 Lexical &amp; Tone</span>
+              <span class="worker-chip" title="SQLite Claim & Metric Contradiction">📊 Facts &amp; Claims</span>
+              <span class="worker-chip" title="Visual Palette & CIELAB ΔE">🎨 Color Delta-E</span>
+              <span class="worker-chip" title="Mathematical WCAG 2.1 Contrast">👁️ WCAG 2.1 Contrast</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: COMPLIANCE RESULTS -->
+      <section id="section-results" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 5</span>
+            <h2 class="section-title">Compliance Results</h2>
+            <span class="section-tooltip" title="Detailed scorecard of passed checks, failed checks, warnings, and suggested corrections.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">Inspect overall brand compliance score, detailed issue breakdowns, cited brand policies, and intent-preserving rewrites.</p>
+
+        <!-- Metrics Bar with Visual Health Gauges -->
+        <div class="metrics-bar">
+          <!-- Compliance Score Radial Card -->
+          <div class="metric-card metric-card-score">
+            <div class="metric-header">
+              <span class="metric-label">Compliance Score</span>
+              <div class="metric-icon-bubble">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+            </div>
+            <div class="metric-val-wrap">
+              <div class="score-radial-wrapper">
+                <svg class="score-ring-svg" width="56" height="56" viewBox="0 0 56 56">
+                  <circle class="score-ring-bg" cx="28" cy="28" r="23"></circle>
+                  <circle class="score-ring-bar" id="score-ring-bar" cx="28" cy="28" r="23"></circle>
+                </svg>
+                <span class="metric-value" id="stat-score">--</span>
+              </div>
+              <div class="score-details">
+                <span class="metric-sub" id="stat-score-sub">Awaiting Audit</span>
+                <span class="score-benchmark-tip">Target: &ge; 85 / 100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pre-Check Latency Card -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Deterministic Pre-Check</span>
+              <div class="worker-pill-badge">
+                <span class="pulse-dot"></span>
+                <span>Speed</span>
+              </div>
+            </div>
+            <div class="metric-val-wrap">
+              <div class="metric-val-block">
+                <span class="metric-value text-cyan" id="stat-latency">0 ms</span>
+                <span class="metric-sub">Deterministic Speed (~0 LLM Cost)</span>
+              </div>
+            </div>
+            <div class="metric-mini-footer">
+              <span class="rag-online-badge">Zero-Hallucination Citations</span>
+            </div>
+          </div>
+
+          <!-- Passed / Failed / Warnings Breakdown Cards -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Issues Breakdown</span>
+              <span class="status-badge" id="stat-issue-status">0 Pending</span>
+            </div>
+            <div class="metric-val-wrap">
+              <div class="metric-val-block">
+                <span class="metric-value text-red" id="stat-violations">0</span>
+                <span class="metric-sub" id="stat-breakdown-brief">Flags to Address</span>
+              </div>
+            </div>
+            <div class="dimension-indicators" id="dimension-indicators">
+              <span class="dim-chip" data-dim="tone" title="Tone of Voice">Tone</span>
+              <span class="dim-chip" data-dim="terminology" title="Forbidden Terminology">Terms</span>
+              <span class="dim-chip" data-dim="facts" title="Metric Contradictions">Facts</span>
+              <span class="dim-chip" data-dim="claims" title="Unsubstantiated Claims">Claims</span>
+              <span class="dim-chip" data-dim="visual" title="Visual & Brand Rules">Visual</span>
+              <span class="dim-chip" data-dim="accessibility" title="WCAG Accessibility">A11y</span>
+            </div>
+          </div>
+
+          <!-- Branched RAG Status -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-label">Branched RAG Status</span>
+              <span class="rag-online-badge">Active Grounding</span>
+            </div>
+            <div class="metric-val-wrap">
+              <div class="metric-val-block">
+                <span class="metric-value text-blue" id="stat-vault-chunks">Active</span>
+                <span class="metric-sub">Exact Page &amp; Clause Citations</span>
+              </div>
+            </div>
+            <div class="rag-trust-banner">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Deterministic Policy Grounding</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compliance Inspector Cards List -->
+        <div class="card inspector-card-container">
+          <div class="card-header inspector-header">
+            <div>
+              <h3 class="card-title">Compliance Inspector Cards</h3>
+              <span class="card-subtitle">Zero-Hallucination Citations &amp; Non-Destructive Intent-Preserving Corrections</span>
+            </div>
+            <div class="inspector-header-right">
+              <span class="badge-count" id="inspector-cards-count">0 Issues</span>
+            </div>
+          </div>
+
+          <!-- Inspector Filter & Search Bar -->
+          <div class="inspector-filter-toolbar">
+            <div class="filter-pills-row" role="toolbar" aria-label="Filter Issue Severity">
+              <button class="filter-pill active" data-filter="all">All Issues</button>
+              <button class="filter-pill" data-filter="critical">Critical</button>
+              <button class="filter-pill" data-filter="warning">Warning</button>
+              <button class="filter-pill" data-filter="lexical">Lexical / Tone</button>
+              <button class="filter-pill" data-filter="facts">Facts &amp; Claims</button>
+              <button class="filter-pill" data-filter="wcag">A11y / Contrast</button>
+            </div>
+            <div class="filter-search-box">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="cards-search-input" placeholder="Search issues..." aria-label="Search flagged issues">
+            </div>
+          </div>
+
+          <!-- Inspector Cards List -->
+          <div id="cards-list" class="cards-list-scroll">
+            <div class="empty-cards-state">
+              <div class="empty-icon-wrap">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
+              <h3>No Issues Screened Yet</h3>
+              <p>Click <strong>Run Pre-Check &amp; Compliance Audit</strong> above to trigger the 4 concurrent static workers.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: HUMAN REVIEW & SIGN-OFF -->
+      <section id="section-review" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 6</span>
+            <h2 class="section-title">Human Review</h2>
+            <span class="section-tooltip" title="Review status, feedback, and manager approval or revision requests.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">Governance managers can review the audit findings, provide feedback, request changes, or grant publication clearance.</p>
+
+        <div class="card human-review-card">
+          <div class="review-status-header">
+            <div class="signoff-status-block">
+              <div class="signoff-label-row">
+                <span class="pulse-indicator pulse-amber" id="signoff-dot"></span>
+                <span class="signoff-label">Manager Sign-Off Status:</span>
+              </div>
+              <span id="manager-status-text" class="signoff-status-val">Requires Pre-Check Review</span>
+            </div>
+
+            <div class="reviewer-badge-box">
+              <span class="reviewer-label">Active Reviewer Role:</span>
+              <strong class="reviewer-name">Brand Governance Lead (Team Xnihilo)</strong>
+            </div>
+          </div>
+
+          <div class="review-actions-bar">
+            <div class="review-instructions">
+              <p>Verify that all critical flags are resolved or legitimately overridden with justification before certifying publication.</p>
+            </div>
+            <div class="signoff-buttons">
+              <button class="btn btn-warning btn-md" id="btn-request-changes">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Request Changes with Feedback</span>
+              </button>
+              <button class="btn btn-success btn-md" id="btn-approve-publication">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Approve for Publication</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Review Notes & Feedback Log -->
+          <div class="review-feedback-container" id="review-feedback-container">
+            <h4 class="feedback-subhead">Recorded Reviewer Feedback &amp; Decisions:</h4>
+            <div class="feedback-items-list" id="feedback-items-list">
+              <p class="subtle-text">No manager change requests or feedback recorded yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 7: DOCUMENT SUBMISSION -->
+      <section id="section-submission" class="workflow-section">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <span class="section-badge">Section 7</span>
+            <h2 class="section-title">Submit Document</h2>
+            <span class="section-tooltip" title="Final validation of all required fields and submission to governance gateway.">ℹ️</span>
+          </div>
+        </div>
+        <p class="section-desc">Validate all required fields, compliance rules, and review sign-offs before submitting your document for final brand clearance.</p>
+
+        <div class="card submit-panel-card">
+          <!-- Submission Checklist -->
+          <div class="submission-checklist-grid">
+            <div class="checklist-item" id="check-item-workspace">
+              <span class="check-icon">✓</span>
+              <div class="check-text">
+                <strong>Project Workspace</strong>
+                <span class="check-sub" id="check-sub-workspace">Selected</span>
+              </div>
+            </div>
+            <div class="checklist-item" id="check-item-title">
+              <span class="check-icon" id="check-icon-title">✓</span>
+              <div class="check-text">
+                <strong>Document Title</strong>
+                <span class="check-sub" id="check-sub-title">Provided</span>
+              </div>
+            </div>
+            <div class="checklist-item" id="check-item-content">
+              <span class="check-icon" id="check-icon-content">✓</span>
+              <div class="check-text">
+                <strong>Document Content</strong>
+                <span class="check-sub" id="check-sub-content">Ready in Editor</span>
+              </div>
+            </div>
+            <div class="checklist-item" id="check-item-audit">
+              <span class="check-icon" id="check-icon-audit">?</span>
+              <div class="check-text">
+                <strong>Pre-Check Audit</strong>
+                <span class="check-sub" id="check-sub-audit">Pending Run</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline Validation Error Box (shown if validation fails) -->
+          <div class="validation-message-box" id="submission-validation-box" style="display: none;"></div>
+
+          <!-- Primary Submit Button -->
+          <div class="submit-action-row">
+            <div class="submit-help-text">
+              <span>Ready to submit? Zuard ensures all citations and zero-hallucination compliance rules are satisfied.</span>
+            </div>
+            <button class="btn btn-primary btn-submit-glow btn-lg" id="btn-submit-document" title="Validate all fields and submit for governance clearance">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              <span>Submit for Brand Governance Approval</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: BRAND VAULT / GUIDELINES & RULES                               -->
+    <!-- ===================================================================== -->
+    <section id="tab-brand-vault" class="tab-content" aria-labelledby="tab-btn-vault">
+      <div class="vault-container">
+        
+        <div class="vault-header-row">
+          <div class="vault-title-group">
+            <span class="section-badge">Knowledge Base</span>
+            <h2 class="section-heading">Guidelines &amp; Rules Vault</h2>
+            <p class="section-subtext">Single source of truth for brand guidelines, verified corporate claims, and visual identity standards.</p>
+          </div>
+          <div class="vault-header-actions">
+            <button class="btn btn-primary" id="btn-refresh-vault">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Refresh Vault</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Guidelines Ingestion Zone -->
+        <div class="card dynamic-upload-box">
+          <div class="upload-dropzone" id="guidelines-dropzone" tabindex="0" role="button" aria-label="Dropzone for brand guidelines PDF or document">
+            <div class="upload-icon-circle">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="upload-text-group">
+              <h3 class="upload-title">Dynamically Ingest Brand Guidelines Document</h3>
+              <p class="upload-desc">Upload a multi-page PDF or text style guide. Zuard automatically indexes it into Branched RAG, extracts new terminology &amp; verified facts, and re-instructs the 4 static workers in real-time.</p>
+              <div class="upload-badges">
+                <span class="file-type-pill">PDF (.pdf)</span>
+                <span class="file-type-pill">Plaintext (.txt)</span>
+                <span class="file-type-pill">Markdown (.md)</span>
+              </div>
+            </div>
+            <div class="upload-action-group">
+              <input type="file" id="guideline-file-input" accept=".pdf,.txt,.md" style="display: none;">
+              <button class="btn btn-primary" id="btn-select-guideline-file">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Select Guidelines File</span>
+              </button>
+            </div>
+          </div>
+          <div id="guideline-upload-status" class="upload-status-bar" style="display: none;"></div>
+        </div>
+
+        <div class="vault-sections-grid">
+          
+          <!-- Approved Facts Table -->
+          <div class="card vault-box">
+            <div class="card-header table-card-header">
+              <div class="table-title-group">
+                <div class="icon-bubble-blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div>
+                  <h3 class="card-title">Approved Factual Claims (SQL Table)</h3>
+                  <span class="card-subtitle">Indexed ground truth verified metrics</span>
+                </div>
+              </div>
+              <div class="table-header-controls">
+                <input type="text" id="facts-search-input" class="table-filter-input" placeholder="Search verified claims..." aria-label="Search facts">
+                <span class="badge-count" id="vault-facts-count">--</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="facts-table">
+                <thead>
+                  <tr>
+                    <th>Fact ID</th>
+                    <th>Category</th>
+                    <th>Verified Value</th>
+                    <th>Approved Claim</th>
+                    <th>Cited Source</th>
+                  </tr>
+                </thead>
+                <tbody id="facts-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Banned & Preferred Terminology Dictionary -->
+          <div class="card vault-box">
+            <div class="card-header table-card-header">
+              <div class="table-title-group">
+                <div class="icon-bubble-amber">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                </div>
+                <div>
+                  <h3 class="card-title">Banned &amp; Preferred Terminology</h3>
+                  <span class="card-subtitle">Lexical rules and intent-preserving replacements</span>
+                </div>
+              </div>
+              <div class="table-header-controls">
+                <input type="text" id="terms-search-input" class="table-filter-input" placeholder="Filter terms..." aria-label="Search terms">
+                <span class="badge-count" id="vault-terms-count">--</span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="terms-table">
+                <thead>
+                  <tr>
+                    <th>Forbidden Term</th>
+                    <th>Severity</th>
+                    <th>Preferred Replacement</th>
+                    <th>Rationale &amp; Rule Citation</th>
+                  </tr>
+                </thead>
+                <tbody id="terms-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Visual Brand Rules & Palette -->
+          <div class="card vault-box full-width">
+            <div class="card-header">
+              <div class="table-title-group">
+                <div class="icon-bubble-purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
+                </div>
+                <div>
+                  <h3 class="card-title">Official Brand Color Palette &amp; Visual Rules</h3>
+                  <span class="card-subtitle">Color coordinates, usage rules, and CIELAB perceptual color distance limits</span>
+                </div>
+              </div>
+              <span class="badge-count">&Delta;E Tolerance: 12.0</span>
+            </div>
+            <div id="palette-swatches-grid" class="palette-grid"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: ACTIVITY LOG (AUDIT HISTORY & ACTIONS)                         -->
+    <!-- ===================================================================== -->
+    <section id="tab-activity-log" class="tab-content" aria-labelledby="tab-btn-activity">
+      <div class="activity-container">
+        
+        <div class="vault-header-row">
+          <div class="vault-title-group">
+            <span class="section-badge">Action Trail</span>
+            <h2 class="section-heading">Governance Activity Log</h2>
+            <p class="section-subtext">Real-time chronological timeline tracking project creation, uploads, edits, audits, review decisions, and submissions.</p>
+          </div>
+          <div class="vault-header-actions">
+            <button class="btn btn-secondary" id="btn-export-activity-log" title="Export activity log as text">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export Log</span>
+            </button>
+            <button class="btn btn-ghost text-red" id="btn-clear-activity-log" title="Clear current session log">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              <span>Clear Log</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card activity-panel-card">
+          <!-- Activity Filter Toolbar -->
+          <div class="activity-toolbar">
+            <div class="activity-filter-pills" role="toolbar" aria-label="Filter Log Actions">
+              <button class="activity-pill active" data-act-filter="all">All Events</button>
+              <button class="activity-pill" data-act-filter="workspace">Workspaces</button>
+              <button class="activity-pill" data-act-filter="upload">Uploads</button>
+              <button class="activity-pill" data-act-filter="edit">Edits</button>
+              <button class="activity-pill" data-act-filter="audit">Pre-Checks</button>
+              <button class="activity-pill" data-act-filter="review">Review Actions</button>
+              <button class="activity-pill" data-act-filter="submit">Submissions</button>
+            </div>
+            <div class="activity-search-wrap">
+              <input type="text" id="activity-search-input" placeholder="Search activity log..." class="table-filter-input">
+            </div>
+          </div>
+
+          <!-- Activity Timeline -->
+          <div class="activity-timeline-scroll" id="activity-timeline-scroll">
+            <div class="activity-list" id="activity-list">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: GOVERNANCE INSIGHTS & TELEMETRY                                -->
+    <!-- ===================================================================== -->
+    <section id="tab-governance-insights" class="tab-content" aria-labelledby="tab-btn-insights">
+      <div class="insights-container">
+        
+        <div class="vault-header-row">
+          <div class="vault-title-group">
+            <span class="section-badge">Telemetry</span>
+            <h2 class="section-heading">Governance Insights &amp; Telemetry</h2>
+            <p class="section-subtext">Telemetry tracking recurring brand mistakes, guideline ambiguity hotspots, and review turnaround.</p>
+          </div>
+          <button class="btn btn-secondary" id="btn-refresh-analytics">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Refresh Telemetry</span>
+          </button>
+        </div>
+
+        <div class="insights-kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-blue">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-val" id="kpi-total-docs">0</span>
+              <span class="kpi-label">Documents Screened</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-emerald">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-val" id="kpi-avg-score">--</span>
+              <span class="kpi-label">Average Compliance Score</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-cyan">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-val" id="kpi-avg-speed">0 ms</span>
+              <span class="kpi-label">Average Pre-Check Latency</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap kpi-amber">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-val" id="kpi-total-overrides">0</span>
+              <span class="kpi-label">Human Overrides Recorded</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="insights-grid">
+          
+          <div class="card insight-box">
+            <div class="card-header">
+              <div class="title-with-desc">
+                <h3 class="card-title">Violations by Dimension</h3>
+                <span class="card-subtitle">Distribution of rule triggers across the 6 governance dimensions</span>
+              </div>
+            </div>
+            <div id="dimension-bars" class="dim-bars-container"></div>
+          </div>
+
+          <div class="card insight-box">
+            <div class="card-header">
+              <div class="title-with-desc">
+                <h3 class="card-title">Ambiguity Hotspots (High Override Rate)</h3>
+                <span class="card-subtitle">Rules frequently overridden by human reviewers requiring guideline clarification</span>
+              </div>
+            </div>
+            <div id="ambiguity-hotspots-list" class="hotspots-list">
+              <p class="subtle-text">Run audits and test the Override action to log guideline ambiguity telemetry.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: CREATE NEW PROJECT WORKSPACE                                   -->
+  <!-- ===================================================================== -->
+  <div id="new-project-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-project-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="modal-project-title">Create New Project Brand Workspace</h3>
+            <span class="modal-subtitle">Isolate guidelines, tone persona, and facts for a new product or brand</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-project-modal" aria-label="Close Modal">&times;</button>
+      </div>
+      <form id="new-project-form" class="modal-body">
+        <div class="input-field">
+          <div class="field-label-row">
+            <label for="new-project-name">Project / Brand Title</label>
+            <span class="badge-required">* Required</span>
+          </div>
+          <input type="text" id="new-project-name" placeholder="e.g., Zuard Health AI Platform" required>
+          <span class="input-help-text">Visible title for your brand or client workspace.</span>
+        </div>
+
+        <div class="input-field">
+          <div class="field-label-row">
+            <label for="new-project-id">Project Identifier (Slug)</label>
+            <span class="badge-required">* Required</span>
+          </div>
+          <input type="text" id="new-project-id" placeholder="e.g., health-ai or mobile-app" required>
+          <span class="input-help-text">Alphanumeric URL-safe slug used for backend rule isolation.</span>
+        </div>
+
+        <div class="input-field">
+          <div class="field-label-row">
+            <label for="new-project-persona">Brand Persona &amp; Tone</label>
+            <span class="badge-optional">Optional</span>
+          </div>
+          <input type="text" id="new-project-persona" placeholder="e.g., Enterprise B2B, Youth Social, Clinical &amp; Authoritative">
+          <span class="input-help-text">Guides the pre-screening engine on appropriate tone and vocabulary.</span>
+        </div>
+
+        <div class="input-field">
+          <div class="field-label-row">
+            <label for="new-project-desc">Description</label>
+            <span class="badge-optional">Optional</span>
+          </div>
+          <textarea id="new-project-desc" rows="2" placeholder="Brief overview of project brand objectives, scope, or client..."></textarea>
+        </div>
+
+        <div class="input-field">
+          <div class="field-label-row">
+            <label for="new-project-file">Attach Initial Brand Guidelines</label>
+            <span class="badge-optional">Optional (PDF / TXT / MD)</span>
+          </div>
+          <input type="file" id="new-project-file" accept=".pdf,.txt,.md">
+          <span class="input-help-text">If provided, Zuard will automatically ingest and index rules immediately.</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-project-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-new-project">Create &amp; Wire Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PUBLICATION APPROVAL CERTIFICATE                               -->
+  <!-- ===================================================================== -->
+  <div id="approval-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card certificate-card">
+      <div class="certificate-header">
+        <div class="cert-seal">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div>
+          <h3 class="cert-title">Publication Clearance Certificate</h3>
+          <span class="cert-subtitle">Official Brand Governance Compliance Audit Record</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-approval-modal">&times;</button>
+      </div>
+      <div class="certificate-body">
+        <div class="cert-badge-row">
+          <div class="cert-badge">
+            <span class="badge-label">Audit Score</span>
+            <span class="badge-val text-green" id="cert-score">95/100</span>
+          </div>
+          <div class="cert-badge">
+            <span class="badge-label">Pre-Check Latency</span>
+            <span class="badge-val text-cyan" id="cert-latency">2.4 ms</span>
+          </div>
+          <div class="cert-badge">
+            <span class="badge-label">Sign-Off Status</span>
+            <span class="badge-val text-green">CLEARED FOR PUBLICATION</span>
+          </div>
+        </div>
+        <div class="cert-details-grid">
+          <div class="cert-field">
+            <span class="c-label">Document:</span>
+            <span class="c-val" id="cert-doc-name">Q4_Product_Launch_Release.pdf</span>
+          </div>
+          <div class="cert-field">
+            <span class="c-label">Workspace:</span>
+            <span class="c-val" id="cert-project-name">Zuard Enterprise</span>
+          </div>
+          <div class="cert-field">
+            <span class="c-label">Timestamp:</span>
+            <span class="c-val" id="cert-timestamp">Just now</span>
+          </div>
+          <div class="cert-field">
+            <span class="c-label">Audit Hash:</span>
+            <span class="c-val font-mono" id="cert-hash">SHA256: 7f3b...e21a</span>
+          </div>
+        </div>
+        <div class="cert-guarantee-notice">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Certified compliant with zero factual contradictions, zero unapproved claims, and WCAG 2.1 AA accessibility standards.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-print-certificate">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span>Print / Save Audit</span>
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-done-certificate">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PIPELINE & ARCHITECTURE GUIDE                                  -->
+  <!-- ===================================================================== -->
+  <div id="guide-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card guide-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-wrap icon-cyan">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3 class="modal-title">Zuard Architecture &amp; Beginner's Guide</h3>
+        </div>
+        <button class="modal-close-btn" id="btn-close-guide-modal">&times;</button>
+      </div>
+      <div class="modal-body guide-body">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Workspace Isolation &amp; Guidelines Ingestion</h4>
+            <p>Each workspace has its own brand persona, color rules, and verified facts. You can drop a brand guidelines PDF into the <strong>Guidelines &amp; Rules</strong> tab at any time to dynamically re-instruct workers.</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>4 Concurrent Static Workers (~2–4ms, $0 LLM Cost)</h4>
+            <p>Runs deterministic static checks in parallel before invoking any generative model:</p>
+            <ul>
+              <li><strong>Worker #1 (Lexical &amp; Tone):</strong> Fast terminology scanning + readability analysis.</li>
+              <li><strong>Worker #2 (Facts &amp; Claims):</strong> SQLite index lookup verifying numbers, stats, and market metrics.</li>
+              <li><strong>Worker #3 (Visual &amp; Palette):</strong> CIELAB &Delta;E perceptual color distance verification.</li>
+              <li><strong>Worker #4 (WCAG 2.1 Math):</strong> Mathematical relative luminance contrast ratio verification.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Delta-Only Synthesizer with Branched RAG Citations</h4>
+            <p>If zero violations occur, 0 tokens are spent. If violations are detected, only the flagged snippets are processed with Branched RAG, citing exact page numbers, section headers, and study IDs with zero hallucinations.</p>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Human Review &amp; Official Submission Clearance</h4>
+            <p>Reviewers can accept intent-preserving rewrites with 1 click or override with justified rationale. Once approved, an auditable clearance certificate with SHA256 hash is generated.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-close-guide-modal-btn">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: HUMAN REVIEW FEEDBACK DIALOG                                   -->
+  <!-- ===================================================================== -->
+  <div id="feedback-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-wrap icon-amber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Request Changes from Creator</h3>
+            <span class="modal-subtitle">Provide specific guidance on tone, facts, or brand alignment</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-feedback-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-field">
+          <label for="feedback-notes-input">Revision Instructions &amp; Policy Feedback</label>
+          <textarea id="feedback-notes-input" rows="4" placeholder="Enter specific instructions (e.g., 'Please replace unverified #1 AI claims with our approved 42% benchmark metric from Fact #F-104.')..."></textarea>
+          <span class="input-help-text">This will be added to the Activity Log and the draft status will be set to 'Changes Requested'.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-feedback-modal">Cancel</button>
+        <button type="button" class="btn btn-warning" id="btn-submit-feedback">Send Feedback &amp; Request Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: SUBMISSION CONFIRMATION SUCCESS                                -->
+  <!-- ===================================================================== -->
+  <div id="submission-success-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon-wrap icon-emerald">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Document Submitted Successfully!</h3>
+            <span class="modal-subtitle">Logged to Governance Gateway &amp; Audit Trail</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-submission-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="submission-summary-box">
+          <div class="summary-line">
+            <span class="s-label">Document:</span>
+            <strong class="s-val" id="submit-summary-doc">Q4_Product_Launch_Release.pdf</strong>
+          </div>
+          <div class="summary-line">
+            <span class="s-label">Workspace:</span>
+            <strong class="s-val" id="submit-summary-project">Zuard Enterprise</strong>
+          </div>
+          <div class="summary-line">
+            <span class="s-label">Compliance Score:</span>
+            <strong class="s-val text-green" id="submit-summary-score">95 / 100</strong>
+          </div>
+          <div class="summary-line">
+            <span class="s-label">Submission ID:</span>
+            <strong class="s-val font-mono" id="submit-summary-id">SUB-2026-9481</strong>
+          </div>
+        </div>
+        <p class="submit-success-desc">Your document has been submitted to the Brand Governance Gateway. A permanent entry has been added to your <strong>Activity Log</strong>.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-view-submission-activity">View in Activity Log</button>
+        <button type="button" class="btn btn-primary" id="btn-done-submission">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
