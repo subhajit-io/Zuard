@@ -1,0 +1,19 @@
+{
+  "name": "zuard-frontend",
+  "version": "1.0.0",
+  "description": "Zuard Real-Time Brand Governance & Pre-Screening Web Portal",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "npx serve -l 3000 ."
+  },
+  "keywords": [
+    "brand-governance",
+    "compliance",
+    "rag",
+    "wcag",
+    "zuard"
+  ],
+  "author": "Subhajit (subhajit-io)",
+  "license": "Apache-2.0"
+}

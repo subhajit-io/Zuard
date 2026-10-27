@@ -30,12 +30,12 @@ app.add_middleware(
 # Include API routes
 app.include_router(router)
 
-# Mount frontend web portal
-frontend_dir = getattr(config, "FRONTEND_DIR", config.BASE_DIR.parent / "frontend")
-if not frontend_dir.exists():
-    frontend_dir = config.BASE_DIR / "web"
-if frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+# Mount frontend web portal — prefer web/, fall back to frontend/
+web_dir = config.BASE_DIR.parent / "web"
+frontend_dir = config.BASE_DIR.parent / "frontend"
+serve_dir = web_dir if web_dir.exists() else frontend_dir
+if serve_dir.exists():
+    app.mount("/", StaticFiles(directory=str(serve_dir), html=True), name="frontend")
 
 def start():
     import uvicorn

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zuard — Brand Governance Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Toast Notification Center -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">ZUARD</span>
+          <span class="brand-sub">Brand Governance Engine</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="review" role="tab" aria-selected="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Review
+        </button>
+        <button class="nav-tab" data-tab="vault" role="tab" aria-selected="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Brand Vault
+        </button>
+        <button class="nav-tab" data-tab="projects" role="tab" aria-selected="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Projects
+        </button>
+        <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Analytics
+        </button>
+        <button class="nav-tab" data-tab="activity" role="tab" aria-selected="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Activity
+        </button>
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <!-- Project Workspace Selector -->
+      <div class="control-group">
+        <label for="projectSelector" class="control-label">Workspace:</label>
+        <select id="projectSelector" class="form-select">
+          <option value="zuard-enterprise">Zuard Enterprise</option>
+        </select>
+      </div>
+
+      <!-- Reviewer Role Selector -->
+      <div class="control-group">
+        <label for="reviewerRoleSelector" class="control-label">Role:</label>
+        <select id="reviewerRoleSelector" class="form-select small">
+          <option value="Creator">Creator</option>
+          <option value="Reviewer" selected>Reviewer</option>
+          <option value="Manager">Manager</option>
+        </select>
+      </div>
+
+      <!-- Engine Status Indicator -->
+      <div id="engineStatusBadge" class="status-indicator-badge">
+        <span class="status-dot"></span>
+        <span id="engineStatusText">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- ================= TAB 1: REVIEW (MAIN) ================= -->
+    <section id="tab-review" class="tab-panel active">
+      
+      <!-- Top Split Layout: Editor & Scorecard -->
+      <div class="review-split-grid">
+        
+        <!-- Left: Draft Input & Controls -->
+        <div class="card editor-card">
+          <div class="card-header">
+            <div class="header-title-row">
+              <h2 class="card-title">Content Draft</h2>
+              <span class="badge badge-neutral" id="wordCountBadge">0 words</span>
+            </div>
+            
+            <!-- Sample text quick-loaders -->
+            <div class="sample-loaders">
+              <span class="sample-label">Load Samples:</span>
+              <button type="button" class="btn-sample btn-sample-violations" id="loadSample1" title="Load high violations sample">
+                Sample 1 (Violations)
+              </button>
+              <button type="button" class="btn-sample btn-sample-borderline" id="loadSample2" title="Load borderline sample">
+                Sample 2 (Borderline)
+              </button>
+              <button type="button" class="btn-sample btn-sample-clean" id="loadSample3" title="Load clean sample">
+                Sample 3 (Clean)
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="form-group">
+              <label for="documentTitleInput" class="form-label">Document Title</label>
+              <input type="text" id="documentTitleInput" class="form-input" placeholder="e.g. Q3 Product Launch Press Release" value="Marketing Campaign Draft v1">
+            </div>
+
+            <div class="form-group">
+              <label for="draftContentInput" class="form-label">Draft Text</label>
+              <textarea id="draftContentInput" class="form-textarea" rows="7" placeholder="Paste or type copy here to audit against brand facts, terminology, tone, and WCAG rules..."></textarea>
+            </div>
+
+            <div class="editor-actions-row">
+              <div class="mode-toggles">
+                <label class="toggle-checkbox-label">
+                  <input type="checkbox" id="privacyModeCheckbox">
+                  <span class="toggle-text">Local Edge Privacy Mode (Offline)</span>
+                </label>
+              </div>
+
+              <div class="action-buttons">
+                <button type="button" class="btn btn-secondary" id="btnClearDraft">
+                  Clear
+                </button>
+                <button type="button" class="btn btn-primary" id="btnRunAudit">
+                  <span class="btn-spinner hidden" id="auditSpinner"></span>
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Run Audit</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Governance Scorecard -->
+        <div class="card scorecard-card">
+          <div class="card-header">
+            <h2 class="card-title">Audit Scorecard</h2>
+            <div class="badges-row">
+              <span id="auditLatencyBadge" class="badge badge-neutral">-- ms</span>
+              <span id="auditStatusBadge" class="badge badge-neutral">AWAITING DRAFT</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Score Overview Row -->
+            <div class="score-overview-row">
+              <!-- Animated SVG Ring -->
+              <div class="score-ring-container">
+                <svg class="score-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                  <circle class="score-ring-bg" cx="60" cy="60" r="48" />
+                  <circle class="score-ring-fill" id="scoreRingCircle" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="score-ring-inner">
+                  <span class="score-number" id="complianceScoreValue">--</span>
+                  <span class="score-caption">COMPLIANCE</span>
+                </div>
+              </div>
+
+              <!-- Quick stats -->
+              <div class="score-metrics-list">
+                <div class="metric-item">
+                  <span class="metric-label">Violations</span>
+                  <span class="metric-value text-red" id="totalViolationsCount">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Engine Latency</span>
+                  <span class="metric-value text-accent" id="engineLatencyValue">0.0 ms</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Privacy Shield</span>
+                  <span class="metric-value text-muted" id="privacyShieldLabel">Local Edge Mode</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Readability Grade</span>
+                  <span class="metric-value" id="readabilityGradeValue">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Worker Parallel Latencies Chips -->
+            <div class="worker-chips-section">
+              <div class="section-micro-heading">Deterministic Worker Timing (Parallel Execution)</div>
+              <div class="worker-chips-grid">
+                <div class="worker-chip">
+                  <span class="chip-worker-id">W1 Lexical & Tone</span>
+                  <span class="chip-worker-time" id="w1Time">-- ms</span>
+                </div>
+                <div class="worker-chip">
+                  <span class="chip-worker-id">W2 Branched Facts</span>
+                  <span class="chip-worker-time" id="w2Time">-- ms</span>
+                </div>
+                <div class="worker-chip">
+                  <span class="chip-worker-id">W3 Visual & Color</span>
+                  <span class="chip-worker-time" id="w3Time">-- ms</span>
+                </div>
+                <div class="worker-chip">
+                  <span class="chip-worker-id">W4 WCAG 2.1 A11y</span>
+                  <span class="chip-worker-time" id="w4Time">-- ms</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dimension Breakdown Progress Bars -->
+            <div class="dimension-breakdown-section" id="dimensionBreakdown">
+              <div class="section-micro-heading">Dimension Violation Distribution</div>
+              <div class="dim-tags-row" id="dimTagsContainer">
+                <span class="dim-chip" data-dim="tone">Tone: <b id="dimToneCount">0</b></span>
+                <span class="dim-chip" data-dim="terminology">Terminology: <b id="dimTermCount">0</b></span>
+                <span class="dim-chip" data-dim="facts">Facts: <b id="dimFactsCount">0</b></span>
+                <span class="dim-chip" data-dim="claims">Claims: <b id="dimClaimsCount">0</b></span>
+                <span class="dim-chip" data-dim="wcag">WCAG: <b id="dimWcagCount">0</b></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Middle: Inspector Cards (Violations & Disclosures) -->
+      <section class="inspector-section">
+        <div class="section-header-row">
+          <div>
+            <h3 class="section-title">Inspector Cards &amp; Actionable Flags</h3>
+            <p class="section-subtitle">Real-time governance findings with authoritative citations and instant delta-rewrites.</p>
+          </div>
+          <div class="filter-actions">
+            <span class="badge badge-neutral" id="inspectorCardsCount">0 Flags Found</span>
+          </div>
+        </div>
+
+        <div id="inspectorCardsContainer" class="inspector-cards-list">
+          <!-- Populated dynamically via JS -->
+          <div class="empty-state-card">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-state-icon">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <path d="m9 15 2 2 4-4"/>
+            </svg>
+            <p class="empty-state-title">No audit run yet</p>
+            <p class="empty-state-desc">Select a sample or paste your draft above, then click <strong>Run Audit</strong> to trigger the 4 static workers.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom: Side-by-Side Diff View & Full Suggested Rewrite -->
+      <section class="diff-section">
+        <div class="diff-grid">
+          
+          <!-- Original with Flag Markup -->
+          <div class="card diff-card">
+            <div class="card-header">
+              <h3 class="card-title">Annotated Original Draft</h3>
+              <span class="badge badge-neutral">With Flag Highlights</span>
+            </div>
+            <div class="card-body">
+              <div id="annotatedMarkupView" class="diff-view-content">
+                <span class="placeholder-text">Original text markup with flagged words will appear here...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suggested Full Rewrite -->
+          <div class="card diff-card">
+            <div class="card-header">
+              <h3 class="card-title">Synthesized Compliant Rewrite</h3>
+              <div class="card-actions">
+                <button type="button" class="btn btn-secondary small" id="btnCopyRewrite">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+                <button type="button" class="btn btn-primary small" id="btnApplyRewriteToEditor">
+                  Use in Editor
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="suggestedRewriteView" class="diff-view-content rewrite-content">
+                <span class="placeholder-text">Synthesized compliant rewrite will appear here...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </section>
+
+    <!-- ================= TAB 2: BRAND VAULT ================= -->
+    <section id="tab-vault" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Brand Knowledge Vault</h2>
+          <p class="panel-subheading">Authoritative source-of-truth facts, terminology dictionaries, and design tokens ingested for this workspace.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary" id="btnRefreshVault">Refresh Vault</button>
+        </div>
+      </div>
+
+      <!-- Guideline Ingest Dropzone -->
+      <div class="card upload-card mb-4">
+        <div class="card-header">
+          <h3 class="card-title">Dynamic Guideline Ingestion</h3>
+          <span class="badge badge-accent">Auto-updates TF-IDF RAG &amp; Static Workers</span>
+        </div>
+        <div class="card-body">
+          <div id="guidelineDropzone" class="dropzone">
+            <input type="file" id="guidelineFileInput" class="file-input-hidden" accept=".pdf,.txt,.md">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="dropzone-icon">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="dropzone-text"><strong>Drag &amp; drop Brand Guidelines (PDF, TXT, MD)</strong> here or <span class="text-accent underline">browse files</span></p>
+            <p class="dropzone-sub">Extracts terminology rules, verified facts, and color tokens into the local Branched RAG retriever.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vault Stats Overview -->
+      <div class="vault-stats-grid mb-4" id="vaultStatsGrid">
+        <div class="card stat-card">
+          <span class="stat-label">Approved Facts</span>
+          <span class="stat-val text-green" id="vStatFacts">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Terminology Rules</span>
+          <span class="stat-val text-accent" id="vStatTerms">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Color Tokens</span>
+          <span class="stat-val text-amber" id="vStatColors">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">RAG Chunks</span>
+          <span class="stat-val text-muted" id="vStatChunks">0</span>
+        </div>
+      </div>
+
+      <!-- Vault Data Tables Split -->
+      <div class="vault-data-grid">
+        <!-- Approved Facts Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Approved Verified Facts</h3>
+            <span class="badge badge-neutral" id="factsCountBadge">0 Facts</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-container">
+              <table class="data-table" id="factsTable">
+                <thead>
+                  <tr>
+                    <th>Fact ID</th>
+                    <th>Claim / Statement</th>
+                    <th>Category</th>
+                    <th>Source Document</th>
+                  </tr>
+                </thead>
+                <tbody id="factsTableBody">
+                  <tr><td colspan="4" class="text-center text-muted py-4">Loading facts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminology Rules Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Terminology &amp; Phrase Rules</h3>
+            <span class="badge badge-neutral" id="termsCountBadge">0 Rules</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-container">
+              <table class="data-table" id="termsTable">
+                <thead>
+                  <tr>
+                    <th>Prohibited Term</th>
+                    <th>Approved Alternative</th>
+                    <th>Severity</th>
+                    <th>Citation / Rule</th>
+                  </tr>
+                </thead>
+                <tbody id="termsTableBody">
+                  <tr><td colspan="4" class="text-center text-muted py-4">Loading terminology...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Palette Swatches -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3 class="card-title">Brand Color Palette Tokens</h3>
+          <span class="badge badge-neutral">Worker #3 &amp; #4 Standards</span>
+        </div>
+        <div class="card-body">
+          <div id="paletteSwatchesContainer" class="swatches-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: PROJECTS ================= -->
+    <section id="tab-projects" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Multi-Tenant Workspaces</h2>
+          <p class="panel-subheading">Isolated brand profiles, independent guideline stores, and dedicated static worker configurations.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-primary" id="btnOpenCreateProjectModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Workspace
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Workspaces Grid -->
+      <div class="projects-grid" id="projectsGridContainer">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Create Project Form Card -->
+      <div class="card mt-4" id="createProjectFormCard">
+        <div class="card-header">
+          <h3 class="card-title">Create Workspace</h3>
+        </div>
+        <div class="card-body">
+          <form id="createProjectForm" class="create-project-form">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="newProjectId" class="form-label">Workspace ID (slug)</label>
+                <input type="text" id="newProjectId" class="form-input" placeholder="e.g. acme-fintech" required>
+              </div>
+              <div class="form-group">
+                <label for="newProjectName" class="form-label">Workspace Name</label>
+                <input type="text" id="newProjectName" class="form-input" placeholder="e.g. Acme FinTech Corp" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="newProjectPersona" class="form-label">Brand Persona / Voice</label>
+                <input type="text" id="newProjectPersona" class="form-input" placeholder="e.g. Authoritative, Precise, Transparent">
+              </div>
+              <div class="form-group">
+                <label for="newProjectGuidelinesFile" class="form-label">Initial Guidelines PDF (Optional)</label>
+                <input type="file" id="newProjectGuidelinesFile" class="form-input" accept=".pdf,.txt,.md">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newProjectDesc" class="form-label">Description</label>
+              <textarea id="newProjectDesc" class="form-textarea" rows="2" placeholder="Brief description of this workspace's governance rules..."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btnSubmitCreateProject">
+                Create Workspace
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 4: ANALYTICS ================= -->
+    <section id="tab-analytics" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Governance Telemetry &amp; Insights</h2>
+          <p class="panel-subheading">Aggregated metrics, worker latencies, and violation dimensions across all audits.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary" id="btnRefreshAnalytics">Refresh Telemetry</button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="analytics-kpi-grid mb-4">
+        <div class="card stat-card">
+          <span class="stat-label">Total Audits</span>
+          <span class="stat-val text-accent" id="kpiTotalAudits">0</span>
+          <span class="stat-footer">Cumulative content runs</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Avg Compliance Score</span>
+          <span class="stat-val text-green" id="kpiAvgCompliance">--</span>
+          <span class="stat-footer">Across all workspaces</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Avg Engine Latency</span>
+          <span class="stat-val text-amber" id="kpiAvgLatency">-- ms</span>
+          <span class="stat-footer">Deterministic pre-check</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Violations Prevented</span>
+          <span class="stat-val text-red" id="kpiTotalViolations">0</span>
+          <span class="stat-footer">Deterministic worker flags</span>
+        </div>
+      </div>
+
+      <!-- Insights Details -->
+      <div class="analytics-details-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Top Flagged Dimensions</h3>
+          </div>
+          <div class="card-body">
+            <div id="analyticsDimensionStats" class="dimension-analytics-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Review Actions Summary</h3>
+          </div>
+          <div class="card-body">
+            <div id="analyticsActionsStats" class="actions-analytics-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 5: ACTIVITY ================= -->
+    <section id="tab-activity" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Audit &amp; Action Activity Stream</h2>
+          <p class="panel-subheading">Audit trail of content evaluations, reviewer acceptances, edits, and overrides.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary small" id="btnClearActivity">Clear Stream</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="activity-stream" id="activityStreamContainer">
+            <div class="empty-state-card">
+              <p class="empty-state-title">No actions recorded yet</p>
+              <p class="empty-state-desc">Run audits or accept/edit flags on the Review tab to view the live activity stream.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Edit Flag Modal -->
+  <div id="editFlagModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Suggestion</h3>
+        <button type="button" class="btn-close" id="btnCloseEditModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="editModalSnippetDesc"></p>
+        <div class="form-group">
+          <label for="editSnippetInput" class="form-label">Your Custom Rewrite</label>
+          <textarea id="editSnippetInput" class="form-textarea" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelEditModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSaveEditModal">Save &amp; Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Override Flag Modal -->
+  <div id="overrideFlagModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Override Violation</h3>
+        <button type="button" class="btn-close" id="btnCloseOverrideModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="overrideModalSnippetDesc"></p>
+        <div class="form-group">
+          <label for="overrideJustificationInput" class="form-label">Justification / Reason (Required for audit log)</label>
+          <textarea id="overrideJustificationInput" class="form-textarea" rows="3" placeholder="e.g. Legal exception approved by Chief Counsel in Memo #204..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelOverrideModal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnSaveOverrideModal">Confirm Override</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
