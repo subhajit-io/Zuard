@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zuard — Real-Time Brand Governance & Pre-Screening Engine</title>
+  <title>Zuard — Brand Draft Review</title>
   <meta name="description" content="Sub-5ms deterministic pre-screening, Branched RAG compliance citations, and zero-hallucination governance for enterprise marketing and digital copy.">
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
           <h1 class="brand-title">Zuard</h1>
           <span class="version-tag">v2.4 Enterprise</span>
         </div>
-        <span class="brand-subtitle">Brand Governance & Pre-Screening Engine</span>
+        <span class="brand-subtitle">Check drafts against your brand rules</span>
       </div>
 
       <!-- Quick Project Workspace Switcher in Header -->
@@ -56,12 +56,12 @@
     <nav class="nav-tabs" aria-label="Main Navigation">
       <button class="nav-tab active" data-tab="review-portal" id="tab-btn-review" title="Step-by-step document review and compliance checks">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span>Audit & Review</span>
+        <span>Review a Draft</span>
         <span class="nav-badge" id="nav-issues-badge" style="display: none;">0</span>
       </button>
       <button class="nav-tab" data-tab="brand-vault" id="tab-btn-vault" title="Inspect brand rules, approved facts, and color palettes">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-        <span>Guidelines & Rules</span>
+        <span>Brand Rules</span>
       </button>
       <button class="nav-tab" data-tab="activity-log" id="tab-btn-activity" title="View chronological log of uploads, edits, and decisions">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -69,7 +69,7 @@
       </button>
       <button class="nav-tab" data-tab="governance-insights" id="tab-btn-insights" title="View compliance trends, metrics, and ambiguity hotspots">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-        <span>Governance Insights</span>
+        <span>Insights</span>
       </button>
     </nav>
 
@@ -77,7 +77,7 @@
     <div class="header-right">
       <button class="btn btn-ghost btn-sm" id="btn-open-guide-modal" title="View beginner-friendly architecture & workflow guide">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <span>How it Works</span>
+        <span>Quick Guide</span>
       </button>
 
       <div class="privacy-toggle-container" title="Toggle between confidential zero-cloud edge verification and cloud Gemini reasoning">
@@ -111,32 +111,32 @@
         <div class="stepper-track">
           <a href="#section-workspace" class="step-item" id="step-nav-workspace">
             <span class="step-num">1</span>
-            <span class="step-text">Workspace</span>
+            <span class="step-text">Brand</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-upload" class="step-item" id="step-nav-upload">
             <span class="step-num">2</span>
-            <span class="step-text">Upload</span>
+            <span class="step-text">Add Draft</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-editor" class="step-item" id="step-nav-editor">
             <span class="step-num">3</span>
-            <span class="step-text">Editor</span>
+            <span class="step-text">Edit</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-precheck" class="step-item" id="step-nav-precheck">
             <span class="step-num">4</span>
-            <span class="step-text">Pre-Check</span>
+            <span class="step-text">Check</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-results" class="step-item" id="step-nav-results">
             <span class="step-num">5</span>
-            <span class="step-text">Compliance</span>
+            <span class="step-text">Results</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-review" class="step-item" id="step-nav-review">
             <span class="step-num">6</span>
-            <span class="step-text">Human Review</span>
+            <span class="step-text">Team Review</span>
           </a>
           <span class="step-divider">&rarr;</span>
           <a href="#section-submission" class="step-item" id="step-nav-submission">
@@ -150,8 +150,8 @@
       <section id="section-workspace" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 1</span>
-            <h2 class="section-title">Brand Workspace</h2>
+            <span class="section-badge">Step 1</span>
+            <h2 class="section-title">Choose a Brand</h2>
             <span class="section-tooltip" title="Workspaces keep guidelines, facts, and rules isolated per brand or product line.">ℹ️</span>
           </div>
           <div class="section-actions">
@@ -161,7 +161,7 @@
             </button>
           </div>
         </div>
-        <p class="section-desc">Select an existing brand workspace or create a new one to apply dedicated guidelines, verified facts, and tone rules.</p>
+        <p class="section-desc">Choose which brand rules to use for this draft, or create a workspace for a new brand.</p>
 
         <!-- Active Workspace Summary & Switcher Cards -->
         <div class="workspace-panel-grid">
@@ -190,8 +190,8 @@
           <!-- Quick Workspace Picker Grid -->
           <div class="card workspace-picker-card">
             <div class="card-header-compact">
-              <span class="card-label">Switch Brand Workspace:</span>
-              <span class="card-sublabel">Click any project to switch instantly</span>
+              <span class="card-label">Available brands</span>
+              <span class="card-sublabel">Select a brand to switch</span>
             </div>
             <div class="workspace-chips-grid" id="workspace-chips-grid">
               <!-- Populated dynamically via JS -->
@@ -204,12 +204,12 @@
       <section id="section-upload" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 2</span>
-            <h2 class="section-title">Document Upload</h2>
+            <span class="section-badge">Step 2</span>
+            <h2 class="section-title">Add Your Draft</h2>
             <span class="section-tooltip" title="Upload marketing drafts, landing pages, press releases, or visual banners for screening.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">Easily upload your copy or asset file. Zuard will extract the content and prepare it for automated compliance screening.</p>
+        <p class="section-desc">Upload a draft file, or choose a sample below to try the review flow.</p>
 
         <div class="upload-zone-wrapper">
           <!-- Dropzone -->
@@ -222,11 +222,11 @@
               </svg>
             </div>
             <div class="dropzone-text-block">
-              <h3 class="dropzone-headline">Drag &amp; drop your draft document here, or click to browse</h3>
-              <p class="dropzone-subtext">Upload draft press releases, product sheets, social announcements, or banner assets.</p>
+              <h3 class="dropzone-headline">Drop a draft here or browse your files</h3>
+              <p class="dropzone-subtext">You can also paste or edit text in the editor below.</p>
               <div class="dropzone-specs-row">
-                <span class="spec-pill"><strong>Supported Formats:</strong> PDF (.pdf), Plaintext (.txt), Markdown (.md), Images (.png, .jpg, .webp)</span>
-                <span class="spec-pill spec-limit"><strong>File Size Limit:</strong> Max 25 MB</span>
+                <span class="spec-pill"><strong>File types:</strong> PDF, TXT, MD, PNG, JPG, WEBP</span>
+                <span class="spec-pill spec-limit"><strong>Maximum size:</strong> 25 MB</span>
               </div>
             </div>
             <input type="file" id="document-file-input" accept=".pdf,.txt,.md,.png,.jpg,.jpeg,.webp" style="display: none;">
@@ -267,7 +267,7 @@
           <div class="preset-header-row">
             <div class="preset-title-group">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span class="preset-title">Or load a pre-configured sample scenario:</span>
+              <span class="preset-title">Or try a sample draft</span>
             </div>
             <span class="preset-helper-text">Click any sample below to instantly load real-world test data</span>
           </div>
@@ -318,19 +318,19 @@
       <section id="section-editor" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 3</span>
-            <h2 class="section-title">Document Editor</h2>
+            <span class="section-badge">Step 3</span>
+            <h2 class="section-title">Edit Your Draft</h2>
             <span class="section-tooltip" title="Review, edit, and fine-tune your draft copy or view side-by-side compliance rewrites.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">View and edit your document copy with clearly labeled controls. Switch views to inspect flagged issues or side-by-side diffs.</p>
+        <p class="section-desc">Add or change the text you want Zuard to check. After a check, review any flagged text and suggested changes here.</p>
 
         <div class="card editor-card">
           <!-- Document Header Bar with Title Input -->
           <div class="card-header editor-header-bar">
             <div class="card-title-group editor-title-field">
               <label for="doc-title-input" class="field-title-label">
-                <span>Document Title:</span>
+                <span>Draft name</span>
                 <span class="badge-required" title="Document title is required for audit registration">* Required</span>
               </label>
               <div class="title-input-wrapper">
@@ -359,15 +359,15 @@
             <div class="view-pills-group" role="tablist" aria-label="Editor Views">
               <button class="view-pill active" data-view="editor" role="tab" aria-selected="true" title="Edit draft text directly">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                <span>1. Draft Editor</span>
+                <span>Edit draft</span>
               </button>
               <button class="view-pill" data-view="flagged" role="tab" aria-selected="false" title="View color-coded inline issue tags">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                <span>2. Flagged Annotations</span>
+                <span>Flagged text</span>
               </button>
               <button class="view-pill" data-view="diff" role="tab" aria-selected="false" title="Side-by-side comparison of original vs compliant rewrite">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-                <span>3. Side-by-Side Diff</span>
+                <span>Suggested changes</span>
               </button>
             </div>
             <div class="editor-meta-stats">
@@ -378,7 +378,7 @@
           <!-- Draft Input Textarea -->
           <div id="view-editor" class="editor-view-panel active">
             <label for="draft-text" class="sr-only">Draft Copy Text</label>
-            <textarea id="draft-text" class="draft-textarea" placeholder="Paste your marketing draft, press release, social ad copy, or landing page content here to run pre-screening..."></textarea>
+            <textarea id="draft-text" class="draft-textarea" placeholder="Paste or type your draft here..."></textarea>
           </div>
 
           <!-- Flagged Annotations View -->
@@ -423,10 +423,10 @@
             <div class="visual-bar-header">
               <div class="bar-title-wrap">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
-                <span class="bar-title">Visual &amp; Accessibility Studio</span>
-                <span class="badge-optional">(Optional Creative Check)</span>
+                <span class="bar-title">Image &amp; color checks</span>
+                <span class="badge-optional">Optional</span>
               </div>
-              <span class="studio-subtext">Worker #3 (Color Delta-E) &amp; Worker #4 (WCAG Contrast Math)</span>
+              <span class="studio-subtext">Check brand colors and text contrast.</span>
             </div>
             
             <div class="visual-inputs-row">
@@ -474,28 +474,28 @@
       <section id="section-precheck" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 4</span>
-            <h2 class="section-title">Deterministic Pre-Check</h2>
+            <span class="section-badge">Step 4</span>
+            <h2 class="section-title">Check Your Draft</h2>
             <span class="section-tooltip" title="Runs 4 parallel static workers in ~2ms with zero LLM cost before querying any model.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">Run instant deterministic pre-screening across lexical, factual claims, visual palette, and accessibility dimensions.</p>
+        <p class="section-desc">Check the draft for wording, facts, brand colors, and accessibility.</p>
 
         <div class="precheck-trigger-card card">
           <div class="precheck-left">
             <button class="btn btn-primary btn-run-glow btn-lg" id="btn-run-audit" title="Screen draft with 4 static workers and delta synthesizer (Ctrl + Enter)">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Run Pre-Check &amp; Compliance Audit</span>
+              <span>Check draft</span>
               <span class="kbd-shortcut" title="Keyboard Shortcut">Ctrl ↵</span>
             </button>
-            <span class="precheck-hint">Executes 4 parallel static verification workers in ~2–4ms.</span>
+            <span class="precheck-hint">This usually takes just a moment.</span>
           </div>
 
           <div class="precheck-workers-summary">
             <div class="worker-summary-header">
               <span class="pulse-dot"></span>
-              <span>4 Parallel Workers Active</span>
-              <span class="worker-speed-badge" id="precheck-speed-badge">Sub-5ms Latency</span>
+              <span>Checks included</span>
+              <span class="worker-speed-badge" id="precheck-speed-badge">Ready</span>
             </div>
             <div class="worker-chips-row">
               <span class="worker-chip" title="Lexical Terminology & Tone Scanner">🔤 Lexical &amp; Tone</span>
@@ -511,19 +511,19 @@
       <section id="section-results" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 5</span>
-            <h2 class="section-title">Compliance Results</h2>
+            <span class="section-badge">Step 5</span>
+            <h2 class="section-title">Review Results</h2>
             <span class="section-tooltip" title="Detailed scorecard of passed checks, failed checks, warnings, and suggested corrections.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">Inspect overall brand compliance score, detailed issue breakdowns, cited brand policies, and intent-preserving rewrites.</p>
+        <p class="section-desc">See what passed, what needs attention, and the brand rule behind each issue.</p>
 
         <!-- Metrics Bar with Visual Health Gauges -->
         <div class="metrics-bar">
           <!-- Compliance Score Radial Card -->
           <div class="metric-card metric-card-score">
             <div class="metric-header">
-              <span class="metric-label">Compliance Score</span>
+              <span class="metric-label">Overall score</span>
               <div class="metric-icon-bubble">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
               </div>
@@ -546,7 +546,7 @@
           <!-- Pre-Check Latency Card -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-label">Deterministic Pre-Check</span>
+              <span class="metric-label">Check time</span>
               <div class="worker-pill-badge">
                 <span class="pulse-dot"></span>
                 <span>Speed</span>
@@ -566,7 +566,7 @@
           <!-- Passed / Failed / Warnings Breakdown Cards -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-label">Issues Breakdown</span>
+              <span class="metric-label">Issues found</span>
               <span class="status-badge" id="stat-issue-status">0 Pending</span>
             </div>
             <div class="metric-val-wrap">
@@ -588,7 +588,7 @@
           <!-- Branched RAG Status -->
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-label">Branched RAG Status</span>
+              <span class="metric-label">Brand rules</span>
               <span class="rag-online-badge">Active Grounding</span>
             </div>
             <div class="metric-val-wrap">
@@ -608,8 +608,8 @@
         <div class="card inspector-card-container">
           <div class="card-header inspector-header">
             <div>
-              <h3 class="card-title">Compliance Inspector Cards</h3>
-              <span class="card-subtitle">Zero-Hallucination Citations &amp; Non-Destructive Intent-Preserving Corrections</span>
+              <h3 class="card-title">Issues to review</h3>
+              <span class="card-subtitle">Each issue includes the rule and a suggested fix.</span>
             </div>
             <div class="inspector-header-right">
               <span class="badge-count" id="inspector-cards-count">0 Issues</span>
@@ -620,11 +620,11 @@
           <div class="inspector-filter-toolbar">
             <div class="filter-pills-row" role="toolbar" aria-label="Filter Issue Severity">
               <button class="filter-pill active" data-filter="all">All Issues</button>
-              <button class="filter-pill" data-filter="critical">Critical</button>
-              <button class="filter-pill" data-filter="warning">Warning</button>
-              <button class="filter-pill" data-filter="lexical">Lexical / Tone</button>
-              <button class="filter-pill" data-filter="facts">Facts &amp; Claims</button>
-              <button class="filter-pill" data-filter="wcag">A11y / Contrast</button>
+              <button class="filter-pill" data-filter="critical">High priority</button>
+              <button class="filter-pill" data-filter="warning">Warnings</button>
+              <button class="filter-pill" data-filter="lexical">Wording</button>
+              <button class="filter-pill" data-filter="facts">Facts</button>
+              <button class="filter-pill" data-filter="wcag">Accessibility</button>
             </div>
             <div class="filter-search-box">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -641,8 +641,8 @@
                   <path d="m9 12 2 2 4-4"/>
                 </svg>
               </div>
-              <h3>No Issues Screened Yet</h3>
-              <p>Click <strong>Run Pre-Check &amp; Compliance Audit</strong> above to trigger the 4 concurrent static workers.</p>
+              <h3>No results yet</h3>
+              <p>Select <strong>Check draft</strong> above to review your text.</p>
             </div>
           </div>
         </div>
@@ -652,41 +652,41 @@
       <section id="section-review" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 6</span>
-            <h2 class="section-title">Human Review</h2>
+            <span class="section-badge">Step 6</span>
+            <h2 class="section-title">Team Review</h2>
             <span class="section-tooltip" title="Review status, feedback, and manager approval or revision requests.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">Governance managers can review the audit findings, provide feedback, request changes, or grant publication clearance.</p>
+        <p class="section-desc">A reviewer can approve the draft or send it back with notes.</p>
 
         <div class="card human-review-card">
           <div class="review-status-header">
             <div class="signoff-status-block">
               <div class="signoff-label-row">
                 <span class="pulse-indicator pulse-amber" id="signoff-dot"></span>
-                <span class="signoff-label">Manager Sign-Off Status:</span>
+                <span class="signoff-label">Review status</span>
               </div>
               <span id="manager-status-text" class="signoff-status-val">Requires Pre-Check Review</span>
             </div>
 
             <div class="reviewer-badge-box">
               <span class="reviewer-label">Active Reviewer Role:</span>
-              <strong class="reviewer-name">Brand Governance Lead (Team Xnihilo)</strong>
+                <strong class="reviewer-name">Brand reviewer</strong>
             </div>
           </div>
 
           <div class="review-actions-bar">
             <div class="review-instructions">
-              <p>Verify that all critical flags are resolved or legitimately overridden with justification before certifying publication.</p>
+              <p>Check the results before approving the draft or requesting changes.</p>
             </div>
             <div class="signoff-buttons">
               <button class="btn btn-warning btn-md" id="btn-request-changes">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>Request Changes with Feedback</span>
+                <span>Request changes</span>
               </button>
               <button class="btn btn-success btn-md" id="btn-approve-publication">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Approve for Publication</span>
+                <span>Approve draft</span>
               </button>
             </div>
           </div>
@@ -705,12 +705,12 @@
       <section id="section-submission" class="workflow-section">
         <div class="section-header-row">
           <div class="section-title-wrap">
-            <span class="section-badge">Section 7</span>
-            <h2 class="section-title">Submit Document</h2>
+            <span class="section-badge">Step 7</span>
+            <h2 class="section-title">Submit for Approval</h2>
             <span class="section-tooltip" title="Final validation of all required fields and submission to governance gateway.">ℹ️</span>
           </div>
         </div>
-        <p class="section-desc">Validate all required fields, compliance rules, and review sign-offs before submitting your document for final brand clearance.</p>
+        <p class="section-desc">Confirm the checklist is complete, then send the draft for approval.</p>
 
         <div class="card submit-panel-card">
           <!-- Submission Checklist -->
@@ -718,7 +718,7 @@
             <div class="checklist-item" id="check-item-workspace">
               <span class="check-icon">✓</span>
               <div class="check-text">
-                <strong>Project Workspace</strong>
+                <strong>Brand selected</strong>
                 <span class="check-sub" id="check-sub-workspace">Selected</span>
               </div>
             </div>
@@ -739,7 +739,7 @@
             <div class="checklist-item" id="check-item-audit">
               <span class="check-icon" id="check-icon-audit">?</span>
               <div class="check-text">
-                <strong>Pre-Check Audit</strong>
+                <strong>Draft checked</strong>
                 <span class="check-sub" id="check-sub-audit">Pending Run</span>
               </div>
             </div>
@@ -751,12 +751,34 @@
           <!-- Primary Submit Button -->
           <div class="submit-action-row">
             <div class="submit-help-text">
-              <span>Ready to submit? Zuard ensures all citations and zero-hallucination compliance rules are satisfied.</span>
+              <span>Submit when the checklist is complete and the reviewer has approved the draft.</span>
             </div>
             <button class="btn btn-primary btn-submit-glow btn-lg" id="btn-submit-document" title="Validate all fields and submit for governance clearance">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              <span>Submit for Brand Governance Approval</span>
+              <span>Submit draft</span>
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-comments" class="workflow-section comment-section" aria-labelledby="comments-title">
+        <div class="section-header-row">
+          <div class="section-title-wrap">
+            <h2 class="section-title" id="comments-title">Comments</h2>
+          </div>
+        </div>
+        <div class="card comment-panel">
+          <form id="comment-form" class="comment-form">
+            <label for="comment-text">Your comment</label>
+            <textarea id="comment-text" name="comment" rows="4" placeholder="Write your comment here..."></textarea>
+            <p id="comment-status" class="comment-status" role="status" aria-live="polite"></p>
+            <button type="submit" class="btn btn-primary">Submit Comment</button>
+          </form>
+          <div class="comment-results">
+            <h3>Submitted comments</h3>
+            <ul id="comment-list" class="comment-list" aria-live="polite">
+              <li class="comment-empty">No comments yet.</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -772,13 +794,13 @@
         <div class="vault-header-row">
           <div class="vault-title-group">
             <span class="section-badge">Knowledge Base</span>
-            <h2 class="section-heading">Guidelines &amp; Rules Vault</h2>
-            <p class="section-subtext">Single source of truth for brand guidelines, verified corporate claims, and visual identity standards.</p>
+            <h2 class="section-heading">Brand Rules</h2>
+            <p class="section-subtext">View the approved facts, preferred wording, and colors used when checking drafts.</p>
           </div>
           <div class="vault-header-actions">
             <button class="btn btn-primary" id="btn-refresh-vault">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-              <span>Refresh Vault</span>
+              <span>Refresh rules</span>
             </button>
           </div>
         </div>
@@ -794,8 +816,8 @@
               </svg>
             </div>
             <div class="upload-text-group">
-              <h3 class="upload-title">Dynamically Ingest Brand Guidelines Document</h3>
-              <p class="upload-desc">Upload a multi-page PDF or text style guide. Zuard automatically indexes it into Branched RAG, extracts new terminology &amp; verified facts, and re-instructs the 4 static workers in real-time.</p>
+              <h3 class="upload-title">Add a brand guide</h3>
+              <p class="upload-desc">Upload a PDF, text, or Markdown guide to add its rules to this brand workspace.</p>
               <div class="upload-badges">
                 <span class="file-type-pill">PDF (.pdf)</span>
                 <span class="file-type-pill">Plaintext (.txt)</span>
@@ -823,8 +845,8 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 </div>
                 <div>
-                  <h3 class="card-title">Approved Factual Claims (SQL Table)</h3>
-                  <span class="card-subtitle">Indexed ground truth verified metrics</span>
+                  <h3 class="card-title">Approved facts</h3>
+                  <span class="card-subtitle">Numbers and claims you can use</span>
                 </div>
               </div>
               <div class="table-header-controls">
@@ -856,8 +878,8 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                 </div>
                 <div>
-                  <h3 class="card-title">Banned &amp; Preferred Terminology</h3>
-                  <span class="card-subtitle">Lexical rules and intent-preserving replacements</span>
+                  <h3 class="card-title">Words to avoid and preferred wording</h3>
+                  <span class="card-subtitle">Terms and suggested alternatives</span>
                 </div>
               </div>
               <div class="table-header-controls">
@@ -888,8 +910,8 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/></svg>
                 </div>
                 <div>
-                  <h3 class="card-title">Official Brand Color Palette &amp; Visual Rules</h3>
-                  <span class="card-subtitle">Color coordinates, usage rules, and CIELAB perceptual color distance limits</span>
+                  <h3 class="card-title">Brand colors</h3>
+                  <span class="card-subtitle">Approved colors and how to use them</span>
                 </div>
               </div>
               <span class="badge-count">&Delta;E Tolerance: 12.0</span>
@@ -911,13 +933,13 @@
         <div class="vault-header-row">
           <div class="vault-title-group">
             <span class="section-badge">Action Trail</span>
-            <h2 class="section-heading">Governance Activity Log</h2>
-            <p class="section-subtext">Real-time chronological timeline tracking project creation, uploads, edits, audits, review decisions, and submissions.</p>
+            <h2 class="section-heading">Recent Activity</h2>
+            <p class="section-subtext">See drafts, checks, and review decisions from this session.</p>
           </div>
           <div class="vault-header-actions">
             <button class="btn btn-secondary" id="btn-export-activity-log" title="Export activity log as text">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span>Export Log</span>
+              <span>Copy activity</span>
             </button>
             <button class="btn btn-ghost text-red" id="btn-clear-activity-log" title="Clear current session log">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
@@ -963,12 +985,12 @@
         <div class="vault-header-row">
           <div class="vault-title-group">
             <span class="section-badge">Telemetry</span>
-            <h2 class="section-heading">Governance Insights &amp; Telemetry</h2>
-            <p class="section-subtext">Telemetry tracking recurring brand mistakes, guideline ambiguity hotspots, and review turnaround.</p>
+            <h2 class="section-heading">Insights</h2>
+            <p class="section-subtext">A summary of draft checks, scores, and review patterns.</p>
           </div>
           <button class="btn btn-secondary" id="btn-refresh-analytics">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>Refresh Telemetry</span>
+            <span>Refresh insights</span>
           </button>
         </div>
 

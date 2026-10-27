@@ -21,6 +21,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const privacyStatusText = document.getElementById('privacy-status-text');
   const charCountBadge = document.getElementById('char-count-badge');
   const navIssuesBadge = document.getElementById('nav-issues-badge');
+  const commentForm = document.getElementById('comment-form');
+  const commentInput = document.getElementById('comment-text');
+  const commentList = document.getElementById('comment-list');
+  const commentStatus = document.getElementById('comment-status');
+
+  if (commentForm && commentInput && commentList && commentStatus) {
+    commentForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const comment = commentInput.value.trim();
+
+      if (!comment) {
+        commentStatus.textContent = 'Please write a comment before submitting.';
+        commentInput.focus();
+        return;
+      }
+
+      commentList.querySelector('.comment-empty')?.remove();
+      const commentItem = document.createElement('li');
+      commentItem.className = 'comment-item';
+      commentItem.textContent = comment;
+      commentList.appendChild(commentItem);
+      commentInput.value = '';
+      commentStatus.textContent = 'Your comment has been added.';
+    });
+  }
 
   // Stepper Elements
   const stepItems = document.querySelectorAll('.step-item');
@@ -1037,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRunAudit.disabled = false;
       btnRunAudit.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <span>Run Pre-Check &amp; Compliance Audit</span>
+        <span>Check draft</span>
         <span class="kbd-shortcut" title="Keyboard Shortcut">Ctrl ↵</span>
       `;
     }
