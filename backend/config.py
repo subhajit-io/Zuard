@@ -14,7 +14,7 @@ VAULT_DIR = BASE_DIR / "vault"
 SAMPLE_DATA_DIR = VAULT_DIR / "sample_data"
 DB_PATH = VAULT_DIR / "zuard_vault.db"
 
-FRONTEND_DIR = BASE_DIR.parent / "frontend"
+FRONTEND_DIR = BASE_DIR.parent / "web"
 DOCS_DIR = BASE_DIR.parent / "docs"
 
 # Delta-Only Synthesizer Settings
