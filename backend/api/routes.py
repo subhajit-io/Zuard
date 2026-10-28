@@ -189,6 +189,61 @@ async def audit_content(req: AuditRequest):
 
     return audit_resp
 
+@router.post("/extract-text")
+async def extract_text(
+    file: UploadFile = File(...),
+    project_id: Optional[str] = Form("default")
+):
+    """
+    Extracts draft text and metadata from an uploaded file (PDF, TXT, MD, etc.)
+    WITHOUT running an automated audit. Allows the creator to review and edit
+    content before explicitly triggering 'Pre-Screen Draft'.
+    """
+    p_id = project_id or "default"
+    vault = project_manager.get_vault(p_id)
+
+    temp_dir = config.BASE_DIR / ".tmp_uploads"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    file_path = temp_dir / file.filename
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    content_text = ""
+    is_image = False
+    image_path = None
+
+    suffix = file_path.suffix.lower()
+    if suffix in [".txt", ".md", ".html", ".htm", ".json", ".csv"]:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            content_text = f.read()
+    elif suffix == ".pdf":
+        chunks = vault.indexer.parse_pdf_file(file_path)
+        content_text = "\n\n".join([c["content"] for c in chunks])
+    elif suffix in [".png", ".jpg", ".jpeg", ".webp"]:
+        is_image = True
+        image_path = str(file_path)
+        content_text = f"Attached Visual Asset: {file.filename}\nUse 'Pre-Screen Draft' to inspect color contrast, palette compliance, and WCAG accessibility."
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file format.")
+
+    # Derive a suggested document title from first non-empty line or filename
+    lines = [ln.strip() for ln in content_text.splitlines() if ln.strip()]
+    derived_title = file.filename.rsplit(".", 1)[0].replace("_", " ").title()
+    if lines and len(lines[0]) < 60 and not lines[0].startswith("[") and not lines[0].startswith("Attached"):
+        clean_first = re.sub(r'^[#*>\s]+', '', lines[0]).strip()
+        if clean_first:
+            derived_title = clean_first
+
+    return {
+        "filename": file.filename,
+        "document_title": derived_title,
+        "text": content_text,
+        "is_image": is_image,
+        "image_filename": image_path,
+        "size_bytes": file_path.stat().st_size
+    }
+
 @router.post("/audit-upload")
 async def audit_upload(
     file: UploadFile = File(...),

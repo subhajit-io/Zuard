@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentAuditResponse: null,
     isPreScreened: false,
     preScreenedText: '',
+    attachedImageFilename: null,
     activityLog: [],
     modalTargetFlag: null,
     submissions: [],
@@ -459,7 +460,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
   
   // =========================================================================
+  // Reset Audit Results (Scorecard, Flags & Diff Views)
+  // =========================================================================
+  function resetAuditResults() {
+    state.currentAuditResponse = null;
+    invalidatePreScreen();
+
+    // Reset Scorecard to blank/awaiting state
+    if (el.complianceScoreValue) el.complianceScoreValue.textContent = '--';
+    if (el.scoreRingCircle) {
+      el.scoreRingCircle.style.strokeDashoffset = '301.59';
+      el.scoreRingCircle.style.stroke = 'var(--color-border)';
+    }
+    if (el.auditLatencyBadge) {
+      el.auditLatencyBadge.textContent = '-- ms';
+      el.auditLatencyBadge.className = 'badge badge-neutral';
+    }
+    if (el.auditStatusBadge) {
+      el.auditStatusBadge.textContent = 'AWAITING DRAFT';
+      el.auditStatusBadge.className = 'badge badge-neutral';
+    }
+    if (el.totalViolationsCount) el.totalViolationsCount.textContent = '0';
+    if (el.engineLatencyValue) el.engineLatencyValue.textContent = '0.0 ms';
+    if (el.privacyShieldLabel) el.privacyShieldLabel.textContent = 'Local Edge Mode';
+    if (el.readabilityGradeValue) el.readabilityGradeValue.textContent = 'Grade -- (Ease: --)';
+
+    // Reset Worker Timing Badges if present
+    if (el.w1Time) el.w1Time.textContent = '-- ms';
+    if (el.w2Time) el.w2Time.textContent = '-- ms';
+    if (el.w3Time) el.w3Time.textContent = '-- ms';
+    if (el.w4Time) el.w4Time.textContent = '-- ms';
+
+    // Reset Inspector Cards to clean empty state
+    if (el.inspectorCardsCount) el.inspectorCardsCount.textContent = '0 Flags Found';
+    if (el.inspectorCardsContainer) {
+      el.inspectorCardsContainer.innerHTML = `
+        <div class="empty-state-card">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-state-icon">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="m9 15 2 2 4-4"/>
+          </svg>
+          <p class="empty-state-title">No audit run yet</p>
+          <p class="empty-state-desc">Select a sample or paste your draft above, then click <strong>Pre-Screen Draft</strong> to trigger the deterministic workers.</p>
+        </div>`;
+    }
+
+    // Reset Diff Views
+    if (el.annotatedMarkupView) {
+      el.annotatedMarkupView.innerHTML = '<span class="placeholder-text">Original text markup with flagged words will appear here...</span>';
+    }
+    if (el.suggestedRewriteView) {
+      el.suggestedRewriteView.innerHTML = '<span class="placeholder-text">Synthesized compliant rewrite will appear here...</span>';
+    }
+  }
+
+  // =========================================================================
   // Multi-Format Draft File Upload (+ Button & Drag-and-Drop)
+  // Extracts text and populates editor WITHOUT auto-auditing.
+  // Requires user to explicitly click "Pre-Screen Draft" to inspect.
   // =========================================================================
   function handleDraftFileUpload(file) {
     if (!file) return;
@@ -497,21 +556,20 @@ document.addEventListener('DOMContentLoaded', () => {
       el.draftImagePreviewContainer.classList.add('hidden');
     }
 
-    // Upload & audit via /api/audit-upload
-    uploadAndAuditDraftFile(file);
+    // Extract & load content into editor WITHOUT auto-auditing
+    loadDraftFile(file);
   }
 
-  async function uploadAndAuditDraftFile(file) {
+  async function loadDraftFile(file) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('project_id', state.currentProject);
 
-    showToast(`Uploading & inspecting ${file.name}...`, 'info');
+    showToast(`Loading ${file.name}...`, 'info');
     if (el.auditSpinner) el.auditSpinner.classList.remove('hidden');
-    if (el.btnRunAudit) el.btnRunAudit.disabled = true;
 
     try {
-      const res = await fetch(`${API_BASE}/audit-upload`, {
+      const res = await fetch(`${API_BASE}/extract-text`, {
         method: 'POST',
         body: formData
       });
@@ -526,33 +584,35 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const data = await res.json();
-      state.currentAuditResponse = data;
-      setPreScreened(data.original_text || el.draftContentInput.value.trim());
 
       // Populate draft content with the extracted text
-      if (data.original_text && el.draftContentInput) {
-        el.draftContentInput.value = data.original_text;
+      if (el.draftContentInput) {
+        el.draftContentInput.value = data.text || '';
         updateWordCount();
       }
 
-      if (el.documentTitleInput) {
-        el.documentTitleInput.value = data.document_title || file.name;
+      if (el.documentTitleInput && data.document_title) {
+        el.documentTitleInput.value = data.document_title;
       }
 
-      // Render the results
-      renderAuditScorecard(data);
-      renderInspectorCards(data.inspector_cards || []);
-      renderDiffViews(data);
+      if (data.image_filename) {
+        state.attachedImageFilename = data.image_filename;
+      } else {
+        state.attachedImageFilename = null;
+      }
 
-      showToast(`Successfully analyzed ${file.name}! Score: ${data.compliance_score}/100`, 'success');
-      logActivity('UPLOAD_AUDIT', `Audited uploaded file: ${file.name}`, `Score: ${data.compliance_score}/100 • Flags: ${data.total_violations_count}`);
+      // Explicitly reset any audit results & invalidate pre-screen
+      // Submit button remains disabled until user clicks "Pre-Screen Draft"
+      resetAuditResults();
+
+      showToast(`Loaded ${file.name}. Click "Pre-Screen Draft" to inspect.`, 'success');
+      logActivity('FILE_LOADED', `Loaded draft file: ${file.name}`, `Size: ${(file.size / 1024).toFixed(1)} KB`);
 
     } catch (err) {
-      console.error('Draft file upload audit error:', err);
-      showToast(`Upload check failed: ${err.message}`, 'error');
+      console.error('Draft file extraction error:', err);
+      showToast(`Upload failed: ${err.message}`, 'error');
     } finally {
       if (el.auditSpinner) el.auditSpinner.classList.add('hidden');
-      if (el.btnRunAudit) el.btnRunAudit.disabled = false;
     }
   }
 
@@ -581,6 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el.draftFileAttachment) el.draftFileAttachment.classList.add('hidden');
       if (el.draftImagePreviewContainer) el.draftImagePreviewContainer.classList.add('hidden');
       if (el.draftFileInput) el.draftFileInput.value = '';
+      state.attachedImageFilename = null;
       showToast('Removed attached file reference', 'info');
     });
   }
@@ -608,8 +669,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   el.btnClearDraft.addEventListener('click', () => {
     el.draftContentInput.value = '';
+    if (el.draftFileAttachment) el.draftFileAttachment.classList.add('hidden');
+    if (el.draftImagePreviewContainer) el.draftImagePreviewContainer.classList.add('hidden');
+    if (el.draftFileInput) el.draftFileInput.value = '';
+    state.attachedImageFilename = null;
     updateWordCount();
-    invalidatePreScreen();
+    resetAuditResults();
     showToast('Draft cleared', 'info');
   });
 
@@ -634,7 +699,8 @@ document.addEventListener('DOMContentLoaded', () => {
       project_id: state.currentProject,
       document_title: title,
       content_text: content,
-      privacy_mode: el.privacyModeCheckbox ? el.privacyModeCheckbox.checked : false
+      privacy_mode: el.privacyModeCheckbox ? el.privacyModeCheckbox.checked : false,
+      image_filename: state.attachedImageFilename || undefined
     };
 
     // UI Loading state
