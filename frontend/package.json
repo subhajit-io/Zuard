@@ -4,6 +4,7 @@
   "description": "Zuard Real-Time Brand Governance & Pre-Screening Web Portal",
   "main": "index.html",
   "scripts": {
+    "build": "echo 'Static build complete'",
     "start": "npx serve -l 3000 .",
     "dev": "npx serve -l 3000 ."
   },

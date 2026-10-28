@@ -5,7 +5,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Configuration & API Base Detection
-  const API_BASE = (window.location.port === '8000') ? '/api' : 'http://127.0.0.1:8000/api';
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const defaultRemote = 'https://zuard.onrender.com/api';
+  const API_BASE = (window.ZUARD_API_BASE || localStorage.getItem('zuard_api_base')) 
+    || ((window.location.port === '8000' || (!isLocal && window.location.hostname.includes('onrender.com'))) 
+      ? '/api' 
+      : (isLocal ? 'http://127.0.0.1:8000/api' : defaultRemote));
 
   // Global fetch interceptor to inject X-Zuard-Role header on all requests
   const originalFetch = window.fetch;
