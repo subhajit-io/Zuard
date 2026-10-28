@@ -13,7 +13,7 @@
   <!-- Toast Notification Center -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <!-- App Header -->
+  <!-- Top Navigation Header -->
   <header class="app-header">
     <div class="header-left">
       <div class="brand-badge">
@@ -24,37 +24,16 @@
           </svg>
         </div>
         <div class="brand-text">
-          <span class="brand-name">ZUARD</span>
-          <span class="brand-sub">Brand Governance Engine</span>
+          <div class="brand-name-wrap">
+            <span class="brand-name">ZUARD</span>
+            <span class="brand-edition">Enterprise</span>
+          </div>
+          <span class="brand-sub" id="brandSubtitle">Brand Governance &amp; Content Pre-Screening Engine</span>
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="nav-tabs" role="tablist">
-        <button class="nav-tab active" data-tab="review" role="tab" aria-selected="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Review
-        </button>
-        <button class="nav-tab" data-tab="vault" role="tab" aria-selected="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-          Brand Vault
-        </button>
-        <button class="nav-tab" data-tab="projects" role="tab" aria-selected="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Projects
-        </button>
-        <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Analytics
-        </button>
-        <button class="nav-tab" data-tab="activity" role="tab" aria-selected="false">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Activity
-        </button>
-      </nav>
-    </div>
+      <div class="header-divider"></div>
 
-    <div class="header-right">
       <!-- Project Workspace Selector -->
       <div class="control-group">
         <label for="projectSelector" class="control-label">Workspace:</label>
@@ -62,15 +41,23 @@
           <option value="zuard-enterprise">Zuard Enterprise</option>
         </select>
       </div>
+    </div>
 
-      <!-- Reviewer Role Selector -->
-      <div class="control-group">
-        <label for="reviewerRoleSelector" class="control-label">Role:</label>
-        <select id="reviewerRoleSelector" class="form-select small">
-          <option value="Creator">Creator</option>
-          <option value="Reviewer" selected>Reviewer</option>
-          <option value="Manager">Manager</option>
-        </select>
+    <div class="header-right">
+      <!-- Two-Sided Role Mode Segmented Toggle (No Login Required) -->
+      <div class="role-switcher-container" title="Toggle between Creator Studio and Central Reviewer Admin Console">
+        <span class="role-switcher-label">Mode:</span>
+        <div class="segmented-role-toggle" id="roleToggleGroup">
+          <button type="button" class="role-toggle-btn active" id="btnRoleCreator" data-role="Creator">
+            <span class="role-btn-icon">🎨</span>
+            <span class="role-btn-text">Creator</span>
+          </button>
+          <button type="button" class="role-toggle-btn" id="btnRoleReviewer" data-role="Reviewer">
+            <span class="role-btn-icon">🛡️</span>
+            <span class="role-btn-text">Central Reviewer</span>
+            <span class="role-queue-badge hidden" id="headerQueueBadge">0</span>
+          </button>
+        </div>
       </div>
 
       <!-- Engine Status Indicator -->
@@ -80,6 +67,46 @@
       </div>
     </div>
   </header>
+
+  <!-- Secondary Navigation Subheader Bar -->
+  <nav class="sub-nav-bar" aria-label="Main Navigation">
+    <div class="sub-nav-container">
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="review" role="tab" aria-selected="true" id="tabNavReview">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span id="tabReviewLabel">Studio &amp; Pre-Screen</span>
+        </button>
+        <button class="nav-tab" data-tab="queue" role="tab" aria-selected="false" id="tabNavQueue">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span id="tabQueueLabel">Governance Queue</span>
+          <span class="nav-badge" id="tabQueueBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-tab" data-tab="vault" role="tab" aria-selected="false" id="tabNavVault">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Brand Vault
+        </button>
+        <button class="nav-tab" data-tab="projects" role="tab" aria-selected="false" id="tabNavProjects">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Projects
+        </button>
+        <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false" id="tabNavAnalytics">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Analytics
+        </button>
+        <button class="nav-tab" data-tab="activity" role="tab" aria-selected="false" id="tabNavActivity">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Activity
+        </button>
+      </div>
+
+      <div class="sub-nav-right">
+        <span class="active-mode-indicator" id="activeModeIndicator">
+          <span class="mode-dot"></span>
+          <span id="activeModeText">Creator Studio Active</span>
+        </span>
+      </div>
+    </div>
+  </nav>
 
   <!-- Main Container -->
   <main class="main-content">
@@ -139,7 +166,11 @@
                 <button type="button" class="btn btn-primary" id="btnRunAudit">
                   <span class="btn-spinner hidden" id="auditSpinner"></span>
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>Run Audit</span>
+                  <span id="btnRunAuditText">Pre-Screen Draft</span>
+                </button>
+                <button type="button" class="btn btn-emerald" id="btnOpenSubmitModal" title="Submit draft to Central Reviewer for governance sign-off">
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Submit for Review</span>
                 </button>
               </div>
             </div>
@@ -299,6 +330,65 @@
         </div>
       </section>
 
+    </section>
+
+    <!-- ================= TAB: SUBMISSIONS & WORKFLOW (QUEUE) ================= -->
+    <section id="tab-queue" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading" id="queuePanelHeading">Governance Review Queue</h2>
+          <p class="panel-subheading" id="queuePanelSubheading">Review marketing copy submitted by creators. Inspect violations, approve, request changes, or record legal overrides.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary" id="btnRefreshSubmissions">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Queue KPI Metrics -->
+      <div class="kpi-grid queue-kpis mb-4">
+        <div class="kpi-card">
+          <div class="kpi-value text-accent" id="qKpiPending">0</div>
+          <div class="kpi-label">Pending Review</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-green" id="qKpiApproved">0</div>
+          <div class="kpi-label">Approved</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-amber" id="qKpiChanges">0</div>
+          <div class="kpi-label">Changes Requested</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-muted" id="qKpiTotal">0</div>
+          <div class="kpi-label">Total Submissions</div>
+        </div>
+      </div>
+
+      <!-- Filters Bar -->
+      <div class="queue-filter-bar mb-3">
+        <div class="filter-group">
+          <label class="filter-label">Filter Status:</label>
+          <div class="btn-group-filters" id="queueStatusFilterGroup">
+            <button type="button" class="btn-filter active" data-status="all">All</button>
+            <button type="button" class="btn-filter" data-status="PENDING_REVIEW">Pending</button>
+            <button type="button" class="btn-filter" data-status="APPROVED">Approved</button>
+            <button type="button" class="btn-filter" data-status="CHANGES_REQUESTED">Needs Revision</button>
+            <button type="button" class="btn-filter" data-status="OVERRIDDEN">Overridden</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submissions List Card / Table -->
+      <div class="card">
+        <div class="card-body p-0">
+          <div id="submissionsTableContainer" class="submissions-table-wrap">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ================= TAB 2: BRAND VAULT ================= -->
@@ -613,6 +703,127 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" id="btnCancelOverrideModal">Cancel</button>
         <button type="button" class="btn btn-danger" id="btnSaveOverrideModal">Confirm Override</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Draft Modal (Creator Side) -->
+  <div id="submitDraftModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-badge-icon icon-emerald">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title">Submit for Central Governance Review</h3>
+            <p class="modal-subtitle">Hand off your pre-screened draft to the Brand Review & Policy Admin team.</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseSubmitModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="subCreatorNameInput" class="form-label">Creator / Team Name</label>
+          <input type="text" id="subCreatorNameInput" class="form-input" placeholder="e.g. Content Team Alpha / Alex Rivera" value="Content Team Alpha">
+        </div>
+        <div class="form-group">
+          <label for="subTitleInput" class="form-label">Document / Campaign Title</label>
+          <input type="text" id="subTitleInput" class="form-input" placeholder="Document title">
+        </div>
+        <div class="form-group">
+          <label for="subNotesInput" class="form-label">Submission Brief &amp; Context</label>
+          <textarea id="subNotesInput" class="form-textarea" rows="3" placeholder="Brief notes for Central Reviewer (e.g. Target audience, launch date, specific claims to verify)..."></textarea>
+        </div>
+        <div class="pre-screen-summary-box">
+          <div class="pre-screen-line">
+            <span>Current Pre-Screen Score:</span>
+            <strong id="modalPreScore" class="text-accent">--/100</strong>
+          </div>
+          <div class="pre-screen-line">
+            <span>Violations / Flags:</span>
+            <strong id="modalPreViolations" class="text-red">0</strong>
+          </div>
+          <div class="pre-screen-line">
+            <span>Target Workspace:</span>
+            <strong id="modalPreWorkspace">zuard-enterprise</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelSubmitModal">Cancel</button>
+        <button type="button" class="btn btn-emerald" id="btnConfirmSubmitDraft">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Submit to Governance Queue
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review & Decision Modal (Central Reviewer Side) -->
+  <div id="reviewDecisionModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-badge-icon icon-shield">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="decModalTitle">Review Submission</h3>
+            <span class="modal-subtitle" id="decModalSubtitle">Central Governance Decision</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseDecisionModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="decision-meta-grid mb-3">
+          <div class="meta-item"><span class="m-label">Submission ID:</span> <strong id="decSubId" class="font-mono">--</strong></div>
+          <div class="meta-item"><span class="m-label">Creator:</span> <strong id="decCreator">--</strong></div>
+          <div class="meta-item"><span class="m-label">Workspace:</span> <strong id="decWorkspace">--</strong></div>
+          <div class="meta-item"><span class="m-label">Status:</span> <span id="decStatusBadge" class="badge">--</span></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Creator's Brief &amp; Notes</label>
+          <div id="decCreatorNotes" class="quote-box"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Submitted Content Draft</label>
+          <div id="decContentPreview" class="content-preview-box"></div>
+        </div>
+
+        <div class="decision-mode-selector mb-3">
+          <label class="form-label">Governance Decision Action:</label>
+          <div class="decision-action-tabs">
+            <button type="button" class="dec-tab-btn active" data-action="APPROVE" id="btnDecApproveTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              Approve
+            </button>
+            <button type="button" class="dec-tab-btn" data-action="REQUEST_CHANGES" id="btnDecChangesTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Request Changes
+            </button>
+            <button type="button" class="dec-tab-btn" data-action="OVERRIDE" id="btnDecOverrideTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Legal Override
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="decReviewerNameInput" class="form-label">Reviewer Name / Title</label>
+          <input type="text" id="decReviewerNameInput" class="form-input" value="Central Governance Lead">
+        </div>
+
+        <div class="form-group" id="decFeedbackGroup">
+          <label for="decFeedbackInput" class="form-label" id="decFeedbackLabel">Governance Feedback &amp; Review Remarks</label>
+          <textarea id="decFeedbackInput" class="form-textarea" rows="3" placeholder="Provide notes or revision guidelines for the creator..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnInspectInStudio">Load into Studio Inspector</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitDecision">Confirm Decision</button>
       </div>
     </div>
   </div>

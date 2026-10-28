@@ -9,13 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     ? 'http://127.0.0.1:8000/api'
     : `${window.location.origin}/api`;
 
-  // Application State
+  // Application State (Two-Sided Architecture)
   const state = {
     currentProject: 'zuard-enterprise',
+    currentRole: localStorage.getItem('zuard_role_mode') || 'Creator', // 'Creator' | 'Reviewer'
     reviewerRole: 'Reviewer',
     currentAuditResponse: null,
     activityLog: [],
-    modalTargetFlag: null
+    modalTargetFlag: null,
+    submissions: [],
+    submissionStatusFilter: 'all',
+    activeDecisionSubId: null,
+    selectedDecisionAction: 'APPROVE'
   };
 
   // Sample Presets
@@ -130,7 +135,59 @@ document.addEventListener('DOMContentLoaded', () => {
     overrideJustificationInput: document.getElementById('overrideJustificationInput'),
     btnCancelOverrideModal: document.getElementById('btnCancelOverrideModal'),
     btnSaveOverrideModal: document.getElementById('btnSaveOverrideModal'),
-    btnCloseOverrideModal: document.getElementById('btnCloseOverrideModal')
+    btnCloseOverrideModal: document.getElementById('btnCloseOverrideModal'),
+
+    // Two-Sided Role & Queue Elements
+    brandSubtitle: document.getElementById('brandSubtitle'),
+    btnRoleCreator: document.getElementById('btnRoleCreator'),
+    btnRoleReviewer: document.getElementById('btnRoleReviewer'),
+    headerQueueBadge: document.getElementById('headerQueueBadge'),
+    tabReviewLabel: document.getElementById('tabReviewLabel'),
+    tabQueueLabel: document.getElementById('tabQueueLabel'),
+    tabQueueBadge: document.getElementById('tabQueueBadge'),
+    btnRunAuditText: document.getElementById('btnRunAuditText'),
+    btnOpenSubmitModal: document.getElementById('btnOpenSubmitModal'),
+
+    // Queue Panel
+    queuePanelHeading: document.getElementById('queuePanelHeading'),
+    queuePanelSubheading: document.getElementById('queuePanelSubheading'),
+    btnRefreshSubmissions: document.getElementById('btnRefreshSubmissions'),
+    qKpiPending: document.getElementById('qKpiPending'),
+    qKpiApproved: document.getElementById('qKpiApproved'),
+    qKpiChanges: document.getElementById('qKpiChanges'),
+    qKpiTotal: document.getElementById('qKpiTotal'),
+    queueStatusFilterGroup: document.getElementById('queueStatusFilterGroup'),
+    submissionsTableContainer: document.getElementById('submissionsTableContainer'),
+
+    // Submit Draft Modal
+    submitDraftModal: document.getElementById('submitDraftModal'),
+    subCreatorNameInput: document.getElementById('subCreatorNameInput'),
+    subTitleInput: document.getElementById('subTitleInput'),
+    subNotesInput: document.getElementById('subNotesInput'),
+    modalPreScore: document.getElementById('modalPreScore'),
+    modalPreViolations: document.getElementById('modalPreViolations'),
+    modalPreWorkspace: document.getElementById('modalPreWorkspace'),
+    btnCloseSubmitModal: document.getElementById('btnCloseSubmitModal'),
+    btnCancelSubmitModal: document.getElementById('btnCancelSubmitModal'),
+    btnConfirmSubmitDraft: document.getElementById('btnConfirmSubmitDraft'),
+
+    // Decision Modal
+    reviewDecisionModal: document.getElementById('reviewDecisionModal'),
+    decSubId: document.getElementById('decSubId'),
+    decCreator: document.getElementById('decCreator'),
+    decWorkspace: document.getElementById('decWorkspace'),
+    decStatusBadge: document.getElementById('decStatusBadge'),
+    decCreatorNotes: document.getElementById('decCreatorNotes'),
+    decContentPreview: document.getElementById('decContentPreview'),
+    btnDecApproveTab: document.getElementById('btnDecApproveTab'),
+    btnDecChangesTab: document.getElementById('btnDecChangesTab'),
+    btnDecOverrideTab: document.getElementById('btnDecOverrideTab'),
+    decReviewerNameInput: document.getElementById('decReviewerNameInput'),
+    decFeedbackInput: document.getElementById('decFeedbackInput'),
+    decFeedbackLabel: document.getElementById('decFeedbackLabel'),
+    btnCloseDecisionModal: document.getElementById('btnCloseDecisionModal'),
+    btnInspectInStudio: document.getElementById('btnInspectInStudio'),
+    btnSubmitDecision: document.getElementById('btnSubmitDecision')
   };
 
   // =========================================================================
@@ -229,6 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
       panel.classList.toggle('active', panel.id === `tab-${tabId}`);
     });
 
+    if (tabId === 'queue') {
+      loadSubmissions();
+      loadSubmissionStats();
+    }
     if (tabId === 'vault') loadVaultData();
     if (tabId === 'projects') loadProjects();
     if (tabId === 'analytics') loadAnalytics();
@@ -293,10 +354,12 @@ document.addEventListener('DOMContentLoaded', () => {
     logActivity('SWITCH', `Workspace changed to ${state.currentProject}`, `User: ${state.reviewerRole}`);
   });
 
-  el.reviewerRoleSelector.addEventListener('change', (e) => {
-    state.reviewerRole = e.target.value;
-    showToast(`Reviewer role: ${state.reviewerRole}`, 'info');
-  });
+  if (el.reviewerRoleSelector) {
+    el.reviewerRoleSelector.addEventListener('change', (e) => {
+      state.reviewerRole = e.target.value;
+      showToast(`Reviewer role: ${state.reviewerRole}`, 'info');
+    });
+  }
 
   // =========================================================================
   // Editor & Sample Text Buttons
@@ -1002,6 +1065,465 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Activity stream cleared', 'info');
   });
 
+
+  // =========================================================================
+  // Two-Sided Role Mode Management (Creator vs Central Reviewer)
+  // =========================================================================
+  function setRoleMode(role) {
+    state.currentRole = role;
+    state.reviewerRole = role === 'Creator' ? 'Creator' : 'Central Reviewer';
+    localStorage.setItem('zuard_role_mode', role);
+
+    document.body.classList.remove('mode-creator', 'mode-reviewer');
+    document.body.classList.add(role === 'Creator' ? 'mode-creator' : 'mode-reviewer');
+
+    if (el.btnRoleCreator && el.btnRoleReviewer) {
+      el.btnRoleCreator.classList.toggle('active', role === 'Creator');
+      el.btnRoleReviewer.classList.toggle('active', role === 'Reviewer');
+    }
+
+    const activeModeText = document.getElementById('activeModeText');
+    if (role === 'Creator') {
+      if (el.brandSubtitle) el.brandSubtitle.textContent = 'Creator Studio • Real-Time Pre-Screen & Copywriting';
+      if (el.tabReviewLabel) el.tabReviewLabel.textContent = 'Studio & Pre-Screen';
+      if (el.tabQueueLabel) el.tabQueueLabel.textContent = 'My Submissions';
+      if (el.queuePanelHeading) el.queuePanelHeading.textContent = 'My Submissions & Campaign Tracker';
+      if (el.queuePanelSubheading) el.queuePanelSubheading.textContent = 'Track governance review statuses and reviewer notes for your campaign drafts.';
+      if (el.btnRunAuditText) el.btnRunAuditText.textContent = 'Pre-Screen Draft';
+      if (el.btnOpenSubmitModal) el.btnOpenSubmitModal.classList.remove('hidden');
+      if (activeModeText) activeModeText.textContent = 'Creator Studio Active';
+    } else {
+      if (el.brandSubtitle) el.brandSubtitle.textContent = 'Central Governance Console • Policy & Approvals';
+      if (el.tabReviewLabel) el.tabReviewLabel.textContent = 'Studio & Inspector';
+      if (el.tabQueueLabel) el.tabQueueLabel.textContent = 'Governance Queue';
+      if (el.queuePanelHeading) el.queuePanelHeading.textContent = 'Governance Review Queue';
+      if (el.queuePanelSubheading) el.queuePanelSubheading.textContent = 'Review marketing copy submitted by creators. Inspect violations, approve, request changes, or record legal overrides.';
+      if (el.btnRunAuditText) el.btnRunAuditText.textContent = 'Audit Draft';
+      if (activeModeText) activeModeText.textContent = 'Central Reviewer Active';
+    }
+
+    loadSubmissionStats();
+    loadSubmissions();
+    showToast(`Switched to ${role === 'Creator' ? '🎨 Creator (Client)' : '🛡️ Central Reviewer (Admin)'} Mode`, 'info');
+    logActivity('ROLE', `Role switched to ${role}`, `Workspace: ${state.currentProject}`);
+  }
+
+  if (el.btnRoleCreator) {
+    el.btnRoleCreator.addEventListener('click', () => setRoleMode('Creator'));
+  }
+  if (el.btnRoleReviewer) {
+    el.btnRoleReviewer.addEventListener('click', () => setRoleMode('Reviewer'));
+  }
+
+  // =========================================================================
+  // Submissions & Governance Workflow
+  // =========================================================================
+  async function loadSubmissionStats() {
+    try {
+      const res = await fetch(`${API_BASE}/submissions-stats?project_id=${state.currentProject}`);
+      if (!res.ok) return;
+      const stats = await res.json();
+
+      if (el.qKpiPending) el.qKpiPending.textContent = stats.pending || 0;
+      if (el.qKpiApproved) el.qKpiApproved.textContent = stats.approved || 0;
+      if (el.qKpiChanges) el.qKpiChanges.textContent = stats.changes_requested || 0;
+      if (el.qKpiTotal) el.qKpiTotal.textContent = stats.total || 0;
+
+      const pendingCount = stats.pending || 0;
+      if (el.headerQueueBadge) {
+        if (pendingCount > 0) {
+          el.headerQueueBadge.textContent = pendingCount;
+          el.headerQueueBadge.classList.remove('hidden');
+        } else {
+          el.headerQueueBadge.classList.add('hidden');
+        }
+      }
+      if (el.tabQueueBadge) {
+        if (pendingCount > 0) {
+          el.tabQueueBadge.textContent = pendingCount;
+          el.tabQueueBadge.style.display = 'inline-block';
+        } else {
+          el.tabQueueBadge.style.display = 'none';
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load submission stats:', err);
+    }
+  }
+
+  async function loadSubmissions() {
+    if (!el.submissionsTableContainer) return;
+    try {
+      const filter = state.submissionStatusFilter;
+      const url = `${API_BASE}/submissions?project_id=${state.currentProject}` + (filter !== 'all' ? `&status=${filter}` : '');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Submissions fetch failed (${res.status})`);
+      const subs = await res.json();
+      state.submissions = subs;
+      renderSubmissionsTable(subs);
+    } catch (err) {
+      console.error('Failed to load submissions:', err);
+      el.submissionsTableContainer.innerHTML = `<div class="empty-state-card"><p class="text-red">Error loading submissions: ${escapeHtml(err.message)}</p></div>`;
+    }
+  }
+
+  function renderSubmissionsTable(subs) {
+    if (!subs || subs.length === 0) {
+      const isCreator = state.currentRole === 'Creator';
+      el.submissionsTableContainer.innerHTML = `
+        <div class="empty-state-card" style="padding: 3rem 1rem;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted" style="margin-bottom: 0.75rem;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <p class="empty-state-title">${isCreator ? 'No submissions yet' : 'No submissions in queue'}</p>
+          <p class="empty-state-desc">${isCreator ? 'Pre-screen your copy in the Studio tab and click "Submit for Review" to submit your work.' : 'All incoming creator submissions will appear here for governance review.'}</p>
+        </div>`;
+      return;
+    }
+
+    const isCreator = state.currentRole === 'Creator';
+
+    el.submissionsTableContainer.innerHTML = `
+      <table class="submissions-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title &amp; Creator</th>
+            <th>Workspace</th>
+            <th>Score</th>
+            <th>Flags</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${subs.map(s => {
+            const dateStr = s.created_at ? new Date(s.created_at).toLocaleDateString() : '--';
+            const score = Math.round(s.compliance_score || 0);
+            const scoreColor = score >= 85 ? 'text-green' : score >= 60 ? 'text-amber' : 'text-red';
+            const statusLabel = (s.status || 'PENDING_REVIEW').replace(/_/g, ' ');
+            
+            return `
+              <tr>
+                <td><span class="font-mono text-accent" style="font-size: 0.8125rem;">${escapeHtml(s.id)}</span></td>
+                <td>
+                  <div style="font-weight: 600; color: var(--text-main);">${escapeHtml(s.title)}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">By ${escapeHtml(s.creator_name || 'Creator')}</div>
+                  ${s.notes ? `<div class="text-subtle" style="font-size: 0.75rem; font-style: italic;">"${escapeHtml(s.notes)}"</div>` : ''}
+                </td>
+                <td><span class="badge badge-neutral">${escapeHtml(s.project_id)}</span></td>
+                <td><strong class="${scoreColor}">${score}%</strong></td>
+                <td><span class="badge ${s.violations_count > 0 ? 'badge-danger' : 'badge-success'}">${s.violations_count}</span></td>
+                <td>
+                  <span class="status-pill status-${s.status}">
+                    ${statusLabel}
+                  </span>
+                  ${s.reviewer_decision ? `<div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Decision by ${escapeHtml(s.reviewer_decision.reviewer_name || 'Admin')}</div>` : ''}
+                </td>
+                <td class="text-muted" style="font-size: 0.75rem;">${dateStr}</td>
+                <td style="text-align: right;">
+                  <div class="btn-actions-group" style="justify-content: flex-end;">
+                    ${!isCreator ? `
+                      <button type="button" class="btn btn-primary small" onclick="window.openReviewModal('${s.id}')" title="Review & Make Governance Decision">
+                        Review &amp; Decide
+                      </button>
+                    ` : ''}
+                    <button type="button" class="btn btn-secondary small" onclick="window.loadSubmissionToStudio('${s.id}')" title="Load into Studio Editor">
+                      ${isCreator ? 'Revise in Studio' : 'Inspect'}
+                    </button>
+                    ${!isCreator ? `
+                      <button type="button" class="btn btn-ghost small" onclick="window.deleteSubmission('${s.id}')" title="Delete submission" style="color: var(--color-red);">
+                        &times;
+                      </button>
+                    ` : ''}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // Filter buttons handler
+  if (el.queueStatusFilterGroup) {
+    el.queueStatusFilterGroup.querySelectorAll('.btn-filter').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        el.queueStatusFilterGroup.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.submissionStatusFilter = btn.dataset.status;
+        loadSubmissions();
+      });
+    });
+  }
+
+  if (el.btnRefreshSubmissions) {
+    el.btnRefreshSubmissions.addEventListener('click', () => {
+      loadSubmissions();
+      loadSubmissionStats();
+      showToast('Submissions queue refreshed', 'info');
+    });
+  }
+
+  // =========================================================================
+  // Creator Submit Modal Logic
+  // =========================================================================
+  function openSubmitModal() {
+    const text = el.draftContentInput.value.trim();
+    if (!text) {
+      showToast('Please type or load marketing copy into the editor before submitting.', 'error');
+      el.draftContentInput.focus();
+      return;
+    }
+
+    if (el.subTitleInput) {
+      el.subTitleInput.value = el.documentTitleInput.value.trim() || 'Marketing Campaign Draft';
+    }
+    if (el.modalPreWorkspace) {
+      el.modalPreWorkspace.textContent = state.currentProject;
+    }
+    const score = state.currentAuditResponse?.compliance_score ?? '--';
+    const violations = state.currentAuditResponse?.total_violations_count ?? '--';
+    if (el.modalPreScore) el.modalPreScore.textContent = `${score}/100`;
+    if (el.modalPreViolations) el.modalPreViolations.textContent = violations;
+
+    const savedCreator = localStorage.getItem('zuard_creator_name') || 'Content Team Alpha';
+    if (el.subCreatorNameInput) el.subCreatorNameInput.value = savedCreator;
+
+    el.submitDraftModal.classList.remove('hidden');
+  }
+
+  function closeSubmitModal() {
+    if (el.submitDraftModal) el.submitDraftModal.classList.add('hidden');
+  }
+
+  if (el.btnOpenSubmitModal) {
+    el.btnOpenSubmitModal.addEventListener('click', openSubmitModal);
+  }
+  if (el.btnCloseSubmitModal) {
+    el.btnCloseSubmitModal.addEventListener('click', closeSubmitModal);
+  }
+  if (el.btnCancelSubmitModal) {
+    el.btnCancelSubmitModal.addEventListener('click', closeSubmitModal);
+  }
+
+  async function confirmSubmitDraft() {
+    const title = el.subTitleInput.value.trim() || 'Untitled Campaign';
+    const creatorName = el.subCreatorNameInput.value.trim() || 'Content Creator';
+    const notes = el.subNotesInput.value.trim();
+    const contentText = el.draftContentInput.value.trim();
+
+    localStorage.setItem('zuard_creator_name', creatorName);
+
+    const payload = {
+      project_id: state.currentProject,
+      title: title,
+      content_text: contentText,
+      creator_name: creatorName,
+      notes: notes,
+      compliance_score: state.currentAuditResponse?.compliance_score || 0,
+      violations_count: state.currentAuditResponse?.total_violations_count || 0,
+      audit_data: state.currentAuditResponse || null
+    };
+
+    try {
+      el.btnConfirmSubmitDraft.disabled = true;
+      const res = await fetch(`${API_BASE}/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error(`Submission failed (${res.status})`);
+      const created = await res.json();
+
+      closeSubmitModal();
+      showToast(`Submission ${created.id} sent to Central Reviewer!`, 'success');
+      logActivity('SUBMIT', `Submitted "${title}" to Governance Queue`, `ID: ${created.id} • Creator: ${creatorName}`);
+
+      loadSubmissionStats();
+      loadSubmissions();
+
+      // Switch to queue tab to see status
+      switchTab('queue');
+    } catch (err) {
+      console.error('Submit draft error:', err);
+      showToast(`Submission error: ${err.message}`, 'error');
+    } finally {
+      el.btnConfirmSubmitDraft.disabled = false;
+    }
+  }
+
+  if (el.btnConfirmSubmitDraft) {
+    el.btnConfirmSubmitDraft.addEventListener('click', confirmSubmitDraft);
+  }
+
+  // =========================================================================
+  // Reviewer Decision Modal Logic
+  // =========================================================================
+  window.openReviewModal = async function(subId) {
+    try {
+      const res = await fetch(`${API_BASE}/submissions/${subId}`);
+      if (!res.ok) throw new Error(`Could not fetch submission (${res.status})`);
+      const sub = await res.json();
+      state.activeDecisionSubId = subId;
+
+      el.decSubId.textContent = sub.id;
+      el.decCreator.textContent = sub.creator_name || 'Creator';
+      el.decWorkspace.textContent = sub.project_id;
+      el.decStatusBadge.textContent = (sub.status || 'PENDING_REVIEW').replace(/_/g, ' ');
+      el.decStatusBadge.className = `badge ${sub.status === 'APPROVED' ? 'badge-success' : sub.status === 'CHANGES_REQUESTED' ? 'badge-warning' : 'badge-danger'}`;
+      el.decCreatorNotes.textContent = sub.notes || 'No extra notes provided by creator.';
+      el.decContentPreview.textContent = sub.content_text || '';
+
+      // Reset tabs to APPROVE
+      state.selectedDecisionAction = 'APPROVE';
+      updateDecisionActionTabs('APPROVE');
+      el.decFeedbackInput.value = '';
+
+      el.reviewDecisionModal.classList.remove('hidden');
+    } catch (err) {
+      console.error('Open review modal error:', err);
+      showToast(`Failed to open submission: ${err.message}`, 'error');
+    }
+  };
+
+  function updateDecisionActionTabs(action) {
+    state.selectedDecisionAction = action;
+    [el.btnDecApproveTab, el.btnDecChangesTab, el.btnDecOverrideTab].forEach(btn => {
+      if (btn) btn.classList.toggle('active', btn.dataset.action === action);
+    });
+
+    if (action === 'APPROVE') {
+      el.decFeedbackLabel.textContent = 'Approval Remarks (Optional)';
+      el.decFeedbackInput.placeholder = 'e.g. Perfect alignment with Q4 brand tone and verified metrics. Approved.';
+    } else if (action === 'REQUEST_CHANGES') {
+      el.decFeedbackLabel.textContent = 'Policy Feedback & Required Revisions';
+      el.decFeedbackInput.placeholder = 'e.g. Please replace unverified claim with approved Fact #F-104.';
+    } else {
+      el.decFeedbackLabel.textContent = 'Legal / Governance Exemption Justification (Required)';
+      el.decFeedbackInput.placeholder = 'e.g. Approved under Executive Marketing Exception #MEMO-2026-04.';
+    }
+  }
+
+  [el.btnDecApproveTab, el.btnDecChangesTab, el.btnDecOverrideTab].forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => updateDecisionActionTabs(btn.dataset.action));
+    }
+  });
+
+  function closeDecisionModal() {
+    if (el.reviewDecisionModal) el.reviewDecisionModal.classList.add('hidden');
+  }
+
+  if (el.btnCloseDecisionModal) {
+    el.btnCloseDecisionModal.addEventListener('click', closeDecisionModal);
+  }
+
+  async function submitDecision() {
+    const subId = state.activeDecisionSubId;
+    if (!subId) return;
+
+    const action = state.selectedDecisionAction;
+    const reviewerName = el.decReviewerNameInput.value.trim() || 'Central Governance Lead';
+    const feedback = el.decFeedbackInput.value.trim();
+
+    if (action === 'OVERRIDE' && !feedback) {
+      showToast('Please provide a legal or governance justification for overriding.', 'error');
+      el.decFeedbackInput.focus();
+      return;
+    }
+
+    try {
+      el.btnSubmitDecision.disabled = true;
+      const payload = {
+        action: action,
+        reviewer_name: reviewerName,
+        feedback_notes: feedback,
+        justification: action === 'OVERRIDE' ? feedback : ''
+      };
+
+      const res = await fetch(`${API_BASE}/submissions/${subId}/decision`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error(`Decision submission failed (${res.status})`);
+      const result = await res.json();
+
+      closeDecisionModal();
+      showToast(`Decision recorded: ${action} for ${subId}`, 'success');
+      logActivity(action, `Governance Decision on ${subId}`, `Status: ${result.submission.status} • Reviewer: ${reviewerName}`);
+
+      loadSubmissionStats();
+      loadSubmissions();
+    } catch (err) {
+      console.error('Submit decision error:', err);
+      showToast(`Decision failed: ${err.message}`, 'error');
+    } finally {
+      el.btnSubmitDecision.disabled = false;
+    }
+  }
+
+  if (el.btnSubmitDecision) {
+    el.btnSubmitDecision.addEventListener('click', submitDecision);
+  }
+
+  window.loadSubmissionToStudio = async function(subId) {
+    try {
+      const res = await fetch(`${API_BASE}/submissions/${subId}`);
+      if (!res.ok) throw new Error(`Failed to load submission (${res.status})`);
+      const sub = await res.json();
+
+      el.documentTitleInput.value = sub.title || 'Submission Draft';
+      el.draftContentInput.value = sub.content_text || '';
+      updateWordCount();
+
+      closeDecisionModal();
+      switchTab('review');
+
+      // If submission already has audit data, render it; otherwise run audit
+      if (sub.audit_data && sub.audit_data.compliance_score !== undefined) {
+        state.currentAuditResponse = sub.audit_data;
+        renderAuditResults(sub.audit_data);
+      } else {
+        runAudit();
+      }
+
+      showToast(`Loaded "${sub.title}" into Studio Editor`, 'info');
+    } catch (err) {
+      console.error('Load submission error:', err);
+      showToast(`Could not load submission: ${err.message}`, 'error');
+    }
+  };
+
+  if (el.btnInspectInStudio) {
+    el.btnInspectInStudio.addEventListener('click', () => {
+      if (state.activeDecisionSubId) {
+        window.loadSubmissionToStudio(state.activeDecisionSubId);
+      }
+    });
+  }
+
+  window.deleteSubmission = async function(subId) {
+    if (!confirm(`Are you sure you want to delete submission ${subId}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/submissions/${subId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+      showToast(`Submission ${subId} deleted`, 'info');
+      logActivity('DELETE', `Deleted submission ${subId}`, `Workspace: ${state.currentProject}`);
+      loadSubmissionStats();
+      loadSubmissions();
+    } catch (err) {
+      console.error('Delete submission error:', err);
+      showToast(`Failed to delete: ${err.message}`, 'error');
+    }
+  };
+
   // =========================================================================
   // Initialization Sequence
   // =========================================================================
@@ -1009,6 +1531,8 @@ document.addEventListener('DOMContentLoaded', () => {
     await checkServerHealth();
     await loadProjectsDropdown();
     updateWordCount();
+    setRoleMode(state.currentRole);
+    loadSubmissionStats();
     logActivity('SYS', 'Zuard Governance Studio Initialized', `API Endpoint: ${API_BASE}`);
   }
 

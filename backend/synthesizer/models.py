@@ -48,3 +48,19 @@ class AuditResponse(BaseModel):
     inspector_cards: List[InspectorCard]
     metrics: Dict[str, Any]
     worker_latencies_ms: Dict[str, float]
+
+class SubmissionCreateRequest(BaseModel):
+    project_id: Optional[str] = "zuard-enterprise"
+    title: str = "Untitled Draft"
+    content_text: str
+    creator_name: Optional[str] = "Content Creator"
+    notes: Optional[str] = ""
+    compliance_score: Optional[float] = 0.0
+    violations_count: Optional[int] = 0
+    audit_data: Optional[Dict[str, Any]] = None
+
+class SubmissionDecisionRequest(BaseModel):
+    action: str # APPROVE, REQUEST_CHANGES, OVERRIDE
+    reviewer_name: Optional[str] = "Central Reviewer"
+    feedback_notes: Optional[str] = ""
+    justification: Optional[str] = ""

@@ -9,14 +9,22 @@ from vault.brand_vault import BrandVault
 from vault.project_manager import MultiProjectManager
 from workers.orchestrator import StaticAuditOrchestrator
 from synthesizer.delta_synthesizer import DeltaSynthesizer
-from synthesizer.models import AuditRequest, AuditResponse, ReviewActionRequest
+from synthesizer.models import (
+    AuditRequest,
+    AuditResponse,
+    ReviewActionRequest,
+    SubmissionCreateRequest,
+    SubmissionDecisionRequest
+)
+from vault.submissions_db import SubmissionsDatabase
 from .telemetry import GovernanceTelemetry
 import config as config
 
 router = APIRouter(prefix="/api")
 
-# Multi-project manager and telemetry
+# Multi-project manager, submissions DB, and telemetry
 project_manager = MultiProjectManager()
+submissions_db = SubmissionsDatabase(config.DB_PATH)
 telemetry = GovernanceTelemetry()
 
 @router.get("/health")
@@ -206,3 +214,125 @@ def review_action(req: ReviewActionRequest):
 @router.get("/analytics")
 def get_analytics():
     return telemetry.get_insights()
+
+# =========================================================================
+# Two-Sided Architecture: Creator <-> Central Reviewer Submissions
+# =========================================================================
+
+@router.get("/submissions")
+def list_submissions(
+    project_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    limit: int = Query(50)
+):
+    """List submissions for Creator tracking or Central Reviewer governance queue."""
+    return submissions_db.list_submissions(project_id=project_id, status=status, limit=limit)
+
+@router.post("/submissions")
+async def create_submission(req: SubmissionCreateRequest):
+    """
+    Creator submits a draft and its pre-screen audit results to the Central Reviewer.
+    """
+    p_id = req.project_id or "zuard-enterprise"
+
+    # If audit_data was not supplied, we can run a quick audit
+    audit_data = req.audit_data
+    comp_score = req.compliance_score
+    viol_count = req.violations_count
+
+    if not audit_data:
+        try:
+            orchestrator = project_manager.get_orchestrator(p_id)
+            synthesizer = project_manager.get_synthesizer(p_id)
+            static_res = await orchestrator.run_parallel_audit(draft_text=req.content_text)
+            audit_resp = synthesizer.synthesize(
+                document_title=req.title,
+                original_text=req.content_text,
+                static_audit_result=static_res,
+                project_id=p_id
+            )
+            audit_data = audit_resp.model_dump()
+            comp_score = float(audit_resp.compliance_score)
+            viol_count = int(audit_resp.total_violations_count)
+        except Exception as e:
+            audit_data = {"error": str(e)}
+
+    sub = submissions_db.create_submission(
+        project_id=p_id,
+        title=req.title,
+        content_text=req.content_text,
+        creator_name=req.creator_name or "Creator",
+        notes=req.notes or "",
+        compliance_score=comp_score or 0.0,
+        violations_count=viol_count or 0,
+        audit_data=audit_data,
+        status="PENDING_REVIEW"
+    )
+
+    # Record in telemetry
+    telemetry.record_action({
+        "action": "SUBMIT_FOR_REVIEW",
+        "project_id": p_id,
+        "submission_id": sub["id"],
+        "reviewer_role": "Creator",
+        "creator_name": req.creator_name
+    })
+
+    return sub
+
+@router.get("/submissions/{sub_id}")
+def get_submission(sub_id: str):
+    """Retrieve full details of a single submission for inspection."""
+    sub = submissions_db.get_submission(sub_id)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found.")
+    return sub
+
+@router.post("/submissions/{sub_id}/decision")
+def make_submission_decision(sub_id: str, req: SubmissionDecisionRequest):
+    """
+    Central Reviewer (Admin) records an official decision:
+    - APPROVE
+    - REQUEST_CHANGES
+    - OVERRIDE
+    """
+    sub = submissions_db.get_submission(sub_id)
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found.")
+
+    updated = submissions_db.record_decision(
+        sub_id=sub_id,
+        action=req.action,
+        reviewer_name=req.reviewer_name or "Central Reviewer",
+        feedback_notes=req.feedback_notes or "",
+        justification=req.justification or ""
+    )
+
+    # Record in telemetry
+    telemetry.record_action({
+        "action": f"DECISION_{req.action.upper()}",
+        "project_id": sub.get("project_id", "zuard-enterprise"),
+        "submission_id": sub_id,
+        "reviewer_role": "Central Reviewer",
+        "notes": req.feedback_notes or req.justification
+    })
+
+    return {
+        "status": "SUCCESS",
+        "submission": updated,
+        "message": f"Submission {sub_id} marked as {updated.get('status')} by {req.reviewer_name}"
+    }
+
+@router.delete("/submissions/{sub_id}")
+def delete_submission(sub_id: str):
+    """Delete a submission."""
+    success = submissions_db.delete_submission(sub_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Submission not found.")
+    return {"status": "SUCCESS", "message": f"Submission {sub_id} deleted."}
+
+@router.get("/submissions-stats")
+def get_submission_stats(project_id: Optional[str] = Query(None)):
+    """Returns counts for Pending, Approved, and Changes Requested."""
+    return submissions_db.get_stats(project_id=project_id)
+
