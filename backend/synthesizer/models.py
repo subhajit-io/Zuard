@@ -17,7 +17,7 @@ class InspectorCard(BaseModel):
     override_reason: Optional[str] = None
 
 class AuditRequest(BaseModel):
-    project_id: Optional[str] = "zuard-enterprise"
+    project_id: Optional[str] = "default"
     document_title: str = "Untitled_Draft"
     content_text: str
     image_filename: Optional[str] = None
@@ -26,7 +26,7 @@ class AuditRequest(BaseModel):
     privacy_mode: Optional[bool] = False # True = 100% local edge offline mode
 
 class ReviewActionRequest(BaseModel):
-    project_id: Optional[str] = "zuard-enterprise"
+    project_id: Optional[str] = "default"
     flag_id: str
     action: str # ACCEPT, EDIT, OVERRIDE
     edited_text: Optional[str] = None
@@ -34,7 +34,7 @@ class ReviewActionRequest(BaseModel):
     reviewer_role: str = "Creator" # Creator, Reviewer, Manager
 
 class AuditResponse(BaseModel):
-    project_id: str = "zuard-enterprise"
+    project_id: str = "default"
     document_title: str
     status: str # DRAFT, IN_REVIEW, CHANGES_REQUESTED, APPROVED
     compliance_score: int # 0 to 100
@@ -50,10 +50,10 @@ class AuditResponse(BaseModel):
     worker_latencies_ms: Dict[str, float]
 
 class SubmissionCreateRequest(BaseModel):
-    project_id: Optional[str] = "zuard-enterprise"
-    title: str = "Untitled Draft"
+    project_id: Optional[str] = "default"
+    title: str = ""
     content_text: str
-    creator_name: Optional[str] = "Content Creator"
+    creator_name: Optional[str] = ""
     notes: Optional[str] = ""
     compliance_score: Optional[float] = 0.0
     violations_count: Optional[int] = 0

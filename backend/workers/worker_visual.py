@@ -111,6 +111,8 @@ class VisualAuditWorker:
         return dominant
 
     def check_colors(self, dominant_colors: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        if not self.approved_colors:
+            return []
         flags = []
         flag_counter = 1
 

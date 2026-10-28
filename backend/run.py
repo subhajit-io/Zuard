@@ -22,7 +22,7 @@ def start_server():
     print(" 🚀 STARTING ZUARD GOVERNANCE SERVER")
     print(f" 📍 Web Portal URL  : http://{config.HOST}:{config.PORT}")
     print(f" 📚 API Docs        : http://{config.HOST}:{config.PORT}/docs")
-    print(f" 🛡️  Privacy Mode   : {'Local Edge Offline' if config.LOCAL_PRIVACY_MODE or not config.GEMINI_API_KEY else 'Cloud Gemini 2.5 Flash'}")
+    print(f" 🛡️  Privacy Mode   : {'Local Edge Offline' if config.LOCAL_PRIVACY_MODE or not config.GEMINI_API_KEY else f'Cloud Gemini ({config.GEMINI_MODEL})'}")
     print("="*60 + "\n")
     uvicorn.run("api.app:app", host=config.HOST, port=config.PORT, reload=False)
 

@@ -28,41 +28,58 @@ class BrandVault:
         self.load_all()
 
     def load_all(self):
-        # 1. Load Facts Seed
-        facts_seed = self.sample_dir / "approved_facts.json"
-        if facts_seed.exists():
-            self.facts_db.load_seed_data(facts_seed)
-        
-        # 2. Load Terminology
+        # 1. Facts Database is persistent SQLite via self.facts_db (no mock seeding)
+
+        # 2. Load Terminology Dictionary if exists
         terms_file = self.sample_dir / "terminology_dictionary.json"
         if terms_file.exists():
-            with open(terms_file, "r", encoding="utf-8") as f:
-                self.terminology = json.load(f)
+            try:
+                with open(terms_file, "r", encoding="utf-8") as f:
+                    self.terminology = json.load(f)
+            except Exception:
+                self.terminology = {"terms": []}
         else:
             self.terminology = {"terms": []}
 
-        # 3. Load Visual Rules
+        # 3. Load Visual Rules if exists
         vis_file = self.sample_dir / "visual_brand_rules.json"
         if vis_file.exists():
-            with open(vis_file, "r", encoding="utf-8") as f:
-                self.visual_rules = json.load(f)
+            try:
+                with open(vis_file, "r", encoding="utf-8") as f:
+                    self.visual_rules = json.load(f)
+            except Exception:
+                self.visual_rules = {"color_palette": {}}
         else:
-            self.visual_rules = {}
+            self.visual_rules = {"color_palette": {}}
 
-        # 4. Ingest Guidelines text/PDF
-        chunks = []
-        guide_txt = self.sample_dir / "brand_guidelines.txt"
-        if guide_txt.exists():
-            chunks.extend(self.indexer.parse_text_file(guide_txt))
-        
-        pdf_file = getattr(config, "DOCS_DIR", config.BASE_DIR.parent / "docs") / "Zuard_Round1_Plan.pdf"
-        if not pdf_file.exists():
-            pdf_file = config.BASE_DIR / "Zuard_Round1_Plan.pdf"
-        if pdf_file.exists():
-            chunks.extend(self.indexer.parse_pdf_file(pdf_file))
+        # 4. RAG chunks are only loaded when user uploads guideline documents
 
-        if chunks:
-            self.retriever.index_chunks(chunks)
+    def clear_all_guidelines(self) -> Dict[str, Any]:
+        """Wipes all facts, terminology rules, color tokens, and indexed chunks for this vault."""
+        with self.facts_db._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM approved_facts")
+            conn.commit()
+
+        self.terminology = {"terms": []}
+        terms_file = self.sample_dir / "terminology_dictionary.json"
+        try:
+            with open(terms_file, "w", encoding="utf-8") as f:
+                json.dump(self.terminology, f, indent=2)
+        except Exception:
+            pass
+
+        self.visual_rules = {"color_palette": {}}
+        vis_file = self.sample_dir / "visual_brand_rules.json"
+        try:
+            with open(vis_file, "w", encoding="utf-8") as f:
+                json.dump(self.visual_rules, f, indent=2)
+        except Exception:
+            pass
+
+        self.retriever.chunks = []
+        self.retriever.index_chunks([])
+        return {"status": "SUCCESS", "message": "Brand Vault guidelines wiped completely."}
 
     def ingest_new_guideline_document(self, file_path: Path, orchestrator=None) -> Dict[str, Any]:
         """

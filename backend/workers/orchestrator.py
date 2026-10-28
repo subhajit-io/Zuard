@@ -1,11 +1,13 @@
+import re
 import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from vault.brand_vault import BrandVault
 from .worker_lexical import LexicalStyleWorker
 from .worker_facts import FactVerificationWorker
-from .worker_visual import VisualAuditWorker
+from .worker_visual import VisualAuditWorker, hex_to_rgb, rgb_to_cielab
 from .worker_wcag import WCAGAccessibilityWorker
 
 class StaticAuditOrchestrator:
@@ -29,19 +31,46 @@ class StaticAuditOrchestrator:
     ) -> Dict[str, Any]:
         start_time = time.perf_counter()
 
-        loop = asyncio.get_running_loop()
+        # Automatically inspect whatever is present in draft_text
+        detected_colors = re.findall(r'#(?:[0-9a-fA-F]{3}){1,2}\b', draft_text)
+        detected_alts = re.findall(r'!\[(.*?)\]\((.*?)\)', draft_text)
 
-        # Run the 4 workers concurrently using asyncio.gather
-        tasks = [
-            loop.run_in_executor(None, self.worker1.analyze, draft_text),
-            loop.run_in_executor(None, self.worker2.analyze, draft_text),
-            loop.run_in_executor(None, self._run_visual_worker, image_path),
-            loop.run_in_executor(None, self.worker4.analyze, color_pairs, alt_texts)
-        ]
+        auto_pairs = list(color_pairs) if color_pairs else []
+        if len(detected_colors) >= 2 and not auto_pairs:
+            for i in range(0, len(detected_colors) - 1, 2):
+                auto_pairs.append((detected_colors[i], detected_colors[i+1]))
 
-        results = await asyncio.gather(*tasks)
+        auto_alts = list(alt_texts) if alt_texts else []
+        if detected_alts and not auto_alts:
+            for alt_str, link in detected_alts:
+                auto_alts.append({"alt": alt_str, "asset_name": link.split("/")[-1] or "image"})
 
-        res_lexical, res_facts, res_visual, res_wcag = results
+        # Execute workers (ultra-fast deterministic in-process pre-check ~2ms)
+        res_lexical = self.worker1.analyze(draft_text)
+        res_facts = self.worker2.analyze(draft_text)
+        res_visual = self._run_visual_worker(image_path)
+
+        # Check detected colors against brand palette
+        if detected_colors:
+            color_dicts = []
+            for c in set(detected_colors):
+                try:
+                    rgb = hex_to_rgb(c)
+                    lab = rgb_to_cielab(*rgb)
+                    color_dicts.append({
+                        "hex": c.upper(),
+                        "rgb": rgb,
+                        "lab": lab,
+                        "percentage": round(100 / len(detected_colors), 1)
+                    })
+                except Exception:
+                    pass
+            if color_dicts:
+                detected_color_flags = self.worker3.check_colors(color_dicts)
+                res_visual["flags"].extend(detected_color_flags)
+                res_visual["dominant_colors"].extend(color_dicts)
+
+        res_wcag = self.worker4.analyze(auto_pairs or None, auto_alts or None)
 
         all_flags = []
         all_flags.extend(res_lexical.get("flags", []))

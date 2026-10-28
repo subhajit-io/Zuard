@@ -5,13 +5,27 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Configuration & API Base Detection
-  const API_BASE = (window.location.protocol === 'file:' || !window.location.host)
-    ? 'http://127.0.0.1:8000/api'
-    : `${window.location.origin}/api`;
+  const API_BASE = (window.location.port === '8000') ? '/api' : 'http://127.0.0.1:8000/api';
+
+  // Global fetch interceptor to inject X-Zuard-Role header on all requests
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options = {}) {
+    options.headers = options.headers || {};
+    if (options.headers instanceof Headers) {
+      if (!options.headers.has('X-Zuard-Role')) {
+        options.headers.set('X-Zuard-Role', state.currentRole);
+      }
+    } else if (Array.isArray(options.headers)) {
+      options.headers.push(['X-Zuard-Role', state.currentRole]);
+    } else {
+      options.headers['X-Zuard-Role'] = state.currentRole;
+    }
+    return originalFetch(url, options);
+  };
 
   // Application State (Two-Sided Architecture)
   const state = {
-    currentProject: 'zuard-enterprise',
+    currentProject: 'default',
     currentRole: localStorage.getItem('zuard_role_mode') || 'Creator', // 'Creator' | 'Reviewer'
     reviewerRole: 'Reviewer',
     currentAuditResponse: null,
@@ -23,12 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedDecisionAction: 'APPROVE'
   };
 
-  // Sample Presets
-  const SAMPLES = {
-    violations: "Our #1 AI platform is super cheap and guaranteed to save you 99% on costs. Using our revolutionary miracle engine you'll crush your competition.",
-    borderline: "The Zuard Enterprise Platform delivers 70% faster review cycles. Our legacy sync pipeline reduces errors.",
-    clean: "Zuard's governance engine pre-screens drafts in 2.5 seconds, demonstrating a verified 42% average operational cost reduction (Study ID #F-104)."
-  };
 
   // DOM Elements Cache
   const el = {
@@ -43,11 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Review Tab - Editor
     documentTitleInput: document.getElementById('documentTitleInput'),
+    draftFileInput: document.getElementById('draftFileInput'),
+    btnPlusUpload: document.getElementById('btnPlusUpload'),
+    btnPlusUploadBottom: document.getElementById('btnPlusUploadBottom'),
+    draftFileAttachment: document.getElementById('draftFileAttachment'),
+    attachIcon: document.getElementById('attachIcon'),
+    attachFileName: document.getElementById('attachFileName'),
+    attachFileSize: document.getElementById('attachFileSize'),
+    btnRemoveAttachment: document.getElementById('btnRemoveAttachment'),
+    draftImagePreviewContainer: document.getElementById('draftImagePreviewContainer'),
+    draftImagePreview: document.getElementById('draftImagePreview'),
     draftContentInput: document.getElementById('draftContentInput'),
     wordCountBadge: document.getElementById('wordCountBadge'),
-    loadSample1: document.getElementById('loadSample1'),
-    loadSample2: document.getElementById('loadSample2'),
-    loadSample3: document.getElementById('loadSample3'),
     privacyModeCheckbox: document.getElementById('privacyModeCheckbox'),
     btnClearDraft: document.getElementById('btnClearDraft'),
     btnRunAudit: document.getElementById('btnRunAudit'),
@@ -88,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Brand Vault Tab
     btnRefreshVault: document.getElementById('btnRefreshVault'),
+    btnClearVault: document.getElementById('btnClearVault'),
     guidelineDropzone: document.getElementById('guidelineDropzone'),
     guidelineFileInput: document.getElementById('guidelineFileInput'),
     vStatFacts: document.getElementById('vStatFacts'),
@@ -102,6 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Projects Tab
     projectsGridContainer: document.getElementById('projectsGridContainer'),
+    btnOpenCreateProjectModal: document.getElementById('btnOpenCreateProjectModal'),
+    createProjectFormCard: document.getElementById('createProjectFormCard'),
+    projectsReadOnlyCard: document.getElementById('projectsReadOnlyCard'),
+    vaultUploadCard: document.getElementById('vaultUploadCard'),
+    tabNavVault: document.getElementById('tabNavVault'),
+    btnSubmitModalText: document.getElementById('btnSubmitModalText'),
+    submitModalTitle: document.getElementById('submitModalTitle'),
+    submitModalSubtitle: document.getElementById('submitModalSubtitle'),
+    btnConfirmSubmitText: document.getElementById('btnConfirmSubmitText'),
     createProjectForm: document.getElementById('createProjectForm'),
     newProjectId: document.getElementById('newProjectId'),
     newProjectName: document.getElementById('newProjectName'),
@@ -111,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Analytics Tab
     btnRefreshAnalytics: document.getElementById('btnRefreshAnalytics'),
+    btnClearAnalytics: document.getElementById('btnClearAnalytics'),
     kpiTotalAudits: document.getElementById('kpiTotalAudits'),
     kpiAvgCompliance: document.getElementById('kpiAvgCompliance'),
     kpiAvgLatency: document.getElementById('kpiAvgLatency'),
@@ -275,7 +301,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // Tab Navigation
   // =========================================================================
-  function switchTab(tabId) {
+  function switchTab(tabId, force = false) {
+    if (tabId === 'vault' && state.currentRole === 'Creator') {
+      showToast('Access Denied: Brand Vault is restricted to Central Reviewers.', 'warning');
+      return;
+    }
+    const currentActiveTab = document.querySelector('.nav-tab.active');
+    if (!force && currentActiveTab && currentActiveTab.getAttribute('data-tab') === tabId) {
+      return;
+    }
+
     el.tabs.forEach(tab => {
       const isActive = tab.getAttribute('data-tab') === tabId;
       tab.classList.toggle('active', isActive);
@@ -312,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok) {
         const data = await res.json();
         el.engineStatusBadge.className = 'status-indicator-badge online';
-        el.engineStatusText.textContent = `${data.service} • ${data.privacy_mode}`;
+        el.engineStatusText.textContent = `${data.privacy_mode || "Online"}`;
       } else {
         throw new Error(`Server returned ${res.status}`);
       }
@@ -332,16 +367,27 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) return;
       const projects = await res.json();
       
-      el.projectSelector.innerHTML = '';
-      projects.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.project_id;
-        opt.textContent = `${p.name} (${p.project_id})`;
-        if (p.project_id === state.currentProject) {
-          opt.selected = true;
-        }
-        el.projectSelector.appendChild(opt);
-      });
+      const groupEl = document.getElementById('workspaceSelectorGroup');
+      if (!projects || projects.length === 0) {
+        if (groupEl) groupEl.classList.add('hidden');
+        if (el.projectSelector) el.projectSelector.innerHTML = '<option value="default">Default Workspace</option>';
+        state.currentProject = 'default';
+        return;
+      }
+
+      if (groupEl) groupEl.classList.remove('hidden');
+      if (el.projectSelector) {
+        el.projectSelector.innerHTML = '<option value="default">Default Workspace</option>';
+        projects.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.project_id;
+          opt.textContent = `${p.name} (${p.project_id})`;
+          if (p.project_id === state.currentProject) {
+            opt.selected = true;
+          }
+          el.projectSelector.appendChild(opt);
+        });
+      }
     } catch (err) {
       console.error('Failed to load projects list for dropdown:', err);
     }
@@ -364,6 +410,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // Editor & Sample Text Buttons
   // =========================================================================
+    // Auto-derives clean title from draft content
+  function deriveTitle(text) {
+    if (el.documentTitleInput && el.documentTitleInput.value.trim()) {
+      return el.documentTitleInput.value.trim();
+    }
+    if (!text) return 'Draft Copy';
+    const lines = text.split('\n').map(l => l.replace(/^[#*>\s]+/, '').trim()).filter(Boolean);
+    if (lines.length > 0) {
+      const line = lines[0];
+      return line.length > 50 ? line.substring(0, 47) + '...' : line;
+    }
+    return 'Draft Copy';
+  }
+
   function updateWordCount() {
     const text = el.draftContentInput.value.trim();
     const words = text ? text.split(/\s+/).length : 0;
@@ -372,24 +432,153 @@ document.addEventListener('DOMContentLoaded', () => {
 
   el.draftContentInput.addEventListener('input', updateWordCount);
 
-  function loadSample(sampleText, title) {
-    el.draftContentInput.value = sampleText;
-    el.documentTitleInput.value = title;
-    updateWordCount();
-    showToast(`Loaded: ${title}`, 'info');
+  
+  // =========================================================================
+  // Multi-Format Draft File Upload (+ Button & Drag-and-Drop)
+  // =========================================================================
+  function handleDraftFileUpload(file) {
+    if (!file) return;
+
+    const validExtensions = ['.pdf', '.txt', '.md', '.html', '.htm', '.json', '.png', '.jpg', '.jpeg', '.webp'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!validExtensions.includes(ext)) {
+      showToast(`Unsupported format "${ext}". Supported: PDF, TXT, MD, HTML, PNG, JPG`, 'error');
+      return;
+    }
+
+    // Show attachment chip
+    if (el.draftFileAttachment) {
+      el.draftFileAttachment.classList.remove('hidden');
+      if (el.attachFileName) el.attachFileName.textContent = file.name;
+      if (el.attachFileSize) {
+        const kb = (file.size / 1024).toFixed(1);
+        el.attachFileSize.textContent = `(${kb} KB)`;
+      }
+      if (el.attachIcon) {
+        el.attachIcon.textContent = (ext === '.pdf') ? '📄' : (['.png', '.jpg', '.jpeg', '.webp'].includes(ext) ? '🖼️' : '📝');
+      }
+    }
+
+    // Handle image preview
+    const isImage = ['.png', '.jpg', '.jpeg', '.webp'].includes(ext);
+    if (isImage && el.draftImagePreviewContainer && el.draftImagePreview) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        el.draftImagePreview.src = e.target.result;
+        el.draftImagePreviewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    } else if (el.draftImagePreviewContainer) {
+      el.draftImagePreviewContainer.classList.add('hidden');
+    }
+
+    // Upload & audit via /api/audit-upload
+    uploadAndAuditDraftFile(file);
   }
 
-  el.loadSample1.addEventListener('click', () => {
-    loadSample(SAMPLES.violations, 'High-Risk Marketing Draft (Violations)');
-  });
+  async function uploadAndAuditDraftFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('project_id', state.currentProject);
 
-  el.loadSample2.addEventListener('click', () => {
-    loadSample(SAMPLES.borderline, 'Enterprise Launch Note (Borderline)');
-  });
+    showToast(`Uploading & inspecting ${file.name}...`, 'info');
+    if (el.auditSpinner) el.auditSpinner.classList.remove('hidden');
+    if (el.btnRunAudit) el.btnRunAudit.disabled = true;
 
-  el.loadSample3.addEventListener('click', () => {
-    loadSample(SAMPLES.clean, 'Empirical Evidence Whitepaper (Clean)');
-  });
+    try {
+      const res = await fetch(`${API_BASE}/audit-upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        let errDetail = `${res.statusText} (${res.status})`;
+        try {
+          const errJson = await res.json();
+          if (errJson && errJson.detail) errDetail = errJson.detail;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
+
+      const data = await res.json();
+      state.currentAuditResponse = data;
+
+      // Populate draft content with the extracted text
+      if (data.original_text && el.draftContentInput) {
+        el.draftContentInput.value = data.original_text;
+        updateWordCount();
+      }
+
+      if (el.documentTitleInput) {
+        el.documentTitleInput.value = data.document_title || file.name;
+      }
+
+      // Render the results
+      renderAuditScorecard(data);
+      renderInspectorCards(data.inspector_cards || []);
+      renderDiffViews(data);
+
+      showToast(`Successfully analyzed ${file.name}! Score: ${data.compliance_score}/100`, 'success');
+      logActivity('UPLOAD_AUDIT', `Audited uploaded file: ${file.name}`, `Score: ${data.compliance_score}/100 • Flags: ${data.total_violations_count}`);
+
+    } catch (err) {
+      console.error('Draft file upload audit error:', err);
+      showToast(`Upload check failed: ${err.message}`, 'error');
+    } finally {
+      if (el.auditSpinner) el.auditSpinner.classList.add('hidden');
+      if (el.btnRunAudit) el.btnRunAudit.disabled = false;
+    }
+  }
+
+  if (el.btnPlusUpload) {
+    el.btnPlusUpload.addEventListener('click', () => {
+      if (el.draftFileInput) el.draftFileInput.click();
+    });
+  }
+
+  if (el.btnPlusUploadBottom) {
+    el.btnPlusUploadBottom.addEventListener('click', () => {
+      if (el.draftFileInput) el.draftFileInput.click();
+    });
+  }
+
+  if (el.draftFileInput) {
+    el.draftFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleDraftFileUpload(e.target.files[0]);
+      }
+    });
+  }
+
+  if (el.btnRemoveAttachment) {
+    el.btnRemoveAttachment.addEventListener('click', () => {
+      if (el.draftFileAttachment) el.draftFileAttachment.classList.add('hidden');
+      if (el.draftImagePreviewContainer) el.draftImagePreviewContainer.classList.add('hidden');
+      if (el.draftFileInput) el.draftFileInput.value = '';
+      showToast('Removed attached file reference', 'info');
+    });
+  }
+
+  if (el.draftContentInput) {
+    el.draftContentInput.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      el.draftContentInput.classList.add('textarea-dragover');
+    });
+    el.draftContentInput.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      el.draftContentInput.classList.remove('textarea-dragover');
+    });
+    el.draftContentInput.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      el.draftContentInput.classList.remove('textarea-dragover');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleDraftFileUpload(e.dataTransfer.files[0]);
+      }
+    });
+  }
 
   el.btnClearDraft.addEventListener('click', () => {
     el.draftContentInput.value = '';
@@ -408,11 +597,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const title = deriveTitle(content);
+    if (el.documentTitleInput) el.documentTitleInput.value = title;
+
     const payload = {
       project_id: state.currentProject,
-      document_title: el.documentTitleInput.value.trim() || 'Untitled_Draft',
+      document_title: title,
       content_text: content,
-      privacy_mode: el.privacyModeCheckbox.checked
+      privacy_mode: el.privacyModeCheckbox ? el.privacyModeCheckbox.checked : false
     };
 
     // UI Loading state
@@ -492,21 +684,21 @@ document.addEventListener('DOMContentLoaded', () => {
       el.readabilityGradeValue.textContent = '--';
     }
 
-    // 3. Parallel Worker Timing Chips
-    if (data.worker_latencies_ms) {
+    // 3. Parallel Worker Timing Chips (if elements present)
+    if (data.worker_latencies_ms && el.w1Time) {
       el.w1Time.textContent = `${(data.worker_latencies_ms.worker_1_lexical_ms || 0).toFixed(1)} ms`;
-      el.w2Time.textContent = `${(data.worker_latencies_ms.worker_2_facts_ms || 0).toFixed(1)} ms`;
-      el.w3Time.textContent = `${(data.worker_latencies_ms.worker_3_visual_ms || 0).toFixed(1)} ms`;
-      el.w4Time.textContent = `${(data.worker_latencies_ms.worker_4_wcag_ms || 0).toFixed(1)} ms`;
+      if (el.w2Time) el.w2Time.textContent = `${(data.worker_latencies_ms.worker_2_facts_ms || 0).toFixed(1)} ms`;
+      if (el.w3Time) el.w3Time.textContent = `${(data.worker_latencies_ms.worker_3_visual_ms || 0).toFixed(1)} ms`;
+      if (el.w4Time) el.w4Time.textContent = `${(data.worker_latencies_ms.worker_4_wcag_ms || 0).toFixed(1)} ms`;
     }
 
-    // 4. Dimension Breakdown
-    if (data.dimension_breakdown) {
+    // 4. Dimension Breakdown (if elements present)
+    if (data.dimension_breakdown && el.dimToneCount) {
       el.dimToneCount.textContent = data.dimension_breakdown.tone || 0;
-      el.dimTermCount.textContent = data.dimension_breakdown.terminology || 0;
-      el.dimFactsCount.textContent = data.dimension_breakdown.facts || 0;
-      el.dimClaimsCount.textContent = data.dimension_breakdown.claims || 0;
-      el.dimWcagCount.textContent = (data.dimension_breakdown.accessibility || 0) + (data.dimension_breakdown.visual || 0);
+      if (el.dimTermCount) el.dimTermCount.textContent = data.dimension_breakdown.terminology || 0;
+      if (el.dimFactsCount) el.dimFactsCount.textContent = data.dimension_breakdown.facts || 0;
+      if (el.dimClaimsCount) el.dimClaimsCount.textContent = data.dimension_breakdown.claims || 0;
+      if (el.dimWcagCount) el.dimWcagCount.textContent = (data.dimension_breakdown.accessibility || 0) + (data.dimension_breakdown.visual || 0);
     }
 
     // 5. Inspector Cards
@@ -584,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <div class="card-footer-actions">
             <div class="text-muted" style="font-size: 0.75rem;">
-              Allowed Actions: ${card.allowed_actions.join(', ')}
+              ${state.currentRole === 'Creator' ? 'Creator Actions: Accept suggestion or manually edit snippet' : `Reviewer Actions: Full Governance Authority (${card.allowed_actions.join(', ')})`}
             </div>
             <div class="btn-actions-group">
               <button type="button" class="btn btn-success small" onclick="handleCardAction('${card.flag_id}', 'ACCEPT')">
@@ -595,10 +787,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 Edit
               </button>
-              <button type="button" class="btn btn-warning small" onclick="openOverrideModal('${card.flag_id}')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Override
-              </button>
+              ${state.currentRole !== 'Creator' ? `
+                <button type="button" class="btn btn-warning small" onclick="openOverrideModal('${card.flag_id}')" title="Central Reviewer: Grant legal exception / override">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  Override
+                </button>
+              ` : `
+                <span class="role-locked-pill" title="Permission Denied: Only Central Reviewers can grant legal overrides">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  Override (Reviewer Only)
+                </span>
+              `}
             </div>
           </div>
         </div>
@@ -608,6 +807,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Window-accessible action handlers
   window.handleCardAction = async function(flagId, action, extraPayload = {}) {
+    if (action === 'OVERRIDE' && state.currentRole === 'Creator') {
+      showToast('Permission Denied: Only Central Reviewers can grant legal overrides.', 'error');
+      return;
+    }
     const cardObj = (state.currentAuditResponse?.inspector_cards || []).find(c => c.flag_id === flagId);
     const cardEl = document.getElementById(`card-${flagId}`);
     const statusTag = document.getElementById(`status-tag-${flagId}`);
@@ -781,12 +984,32 @@ document.addEventListener('DOMContentLoaded', () => {
   // Brand Vault Tab Operations
   // =========================================================================
   async function loadVaultData() {
+    if (state.currentRole === 'Creator') {
+      showToast('Access Denied: Brand Vault is restricted to Central Reviewers.', 'warning');
+      switchTab('review');
+      return;
+    }
     try {
-      el.factsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Fetching Brand Vault data...</td></tr>';
-      el.termsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Fetching terminology rules...</td></tr>';
+      if (!el.factsTableBody.children.length || el.factsTableBody.innerText.includes('Fetching')) {
+        el.factsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Fetching Brand Vault data...</td></tr>';
+      }
+      if (!el.termsTableBody.children.length || el.termsTableBody.innerText.includes('Fetching')) {
+        el.termsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Fetching terminology rules...</td></tr>';
+      }
 
-      const res = await fetch(`${API_BASE}/vault?project_id=${encodeURIComponent(state.currentProject)}`);
-      if (!res.ok) throw new Error(`Vault request failed (${res.status})`);
+      const res = await fetch(`${API_BASE}/vault?project_id=${encodeURIComponent(state.currentProject)}`, {
+        headers: {
+          'X-Zuard-Role': state.reviewerRole || 'Reviewer'
+        }
+      });
+      if (!res.ok) {
+        if (res.status === 403) {
+          showToast('Brand Vault access is restricted to Central Reviewers.', 'warning');
+          switchTab('review');
+          return;
+        }
+        throw new Error(`Vault request failed (${res.status})`);
+      }
       const vault = await res.json();
 
       // Stats
@@ -861,6 +1084,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   el.btnRefreshVault.addEventListener('click', loadVaultData);
 
+  if (el.btnClearVault) {
+    el.btnClearVault.addEventListener('click', async () => {
+      if (!confirm(`Are you sure you want to clear all brand guidelines, facts, and rules for '${state.currentProject}'?`)) return;
+      try {
+        const formData = new FormData();
+        formData.append('project_id', state.currentProject);
+        const res = await fetch(`${API_BASE}/clear-vault`, {
+          method: 'POST',
+          body: formData
+        });
+        if (res.ok) {
+          showToast('Brand guidelines cleared successfully!', 'info');
+          loadVaultData();
+        } else {
+          throw new Error(`Failed to clear (${res.status})`);
+        }
+      } catch (err) {
+        showToast(`Clear error: ${err.message}`, 'error');
+      }
+    });
+  }
+
   // Drag and Drop Guideline Upload
   el.guidelineDropzone.addEventListener('click', () => el.guidelineFileInput.click());
   el.guidelineDropzone.addEventListener('dragover', (e) => {
@@ -882,6 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function uploadGuidelineFile(file) {
+    if (state.currentRole === 'Creator') {
+      showToast('Permission Denied: Only Central Reviewers can upload brand guidelines.', 'error');
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
     formData.append('project_id', state.currentProject);
@@ -894,7 +1143,15 @@ document.addEventListener('DOMContentLoaded', () => {
         body: formData
       });
 
-      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
+      if (!res.ok) {
+        let errDetail = `${res.statusText} (${res.status})`;
+        try {
+          const errJson = await res.json();
+          if (errJson && errJson.detail) errDetail = errJson.detail;
+          else if (errJson && errJson.message) errDetail = errJson.message;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
       const data = await res.json();
 
       showToast(`Guidelines ingested successfully! Extracted facts and rules.`, 'success');
@@ -916,7 +1173,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const projects = await res.json();
 
       if (!projects || projects.length === 0) {
-        el.projectsGridContainer.innerHTML = '<p class="text-muted">No workspaces found.</p>';
+        el.projectsGridContainer.innerHTML = `
+          <div class="empty-state-card" style="grid-column: 1 / -1; padding: 3rem 1.5rem; text-align: center;">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted" style="margin-bottom: 0.75rem;">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <p class="empty-state-title">No Custom Workspaces</p>
+            <p class="empty-state-desc">You are currently operating in the primary Brand Knowledge Vault. To create an isolated multi-tenant workspace, click <strong>"+ New Workspace"</strong> above.</p>
+          </div>
+        `;
         return;
       }
 
@@ -930,9 +1195,16 @@ document.addEventListener('DOMContentLoaded', () => {
                   <h4 class="project-card-name">${escapeHtml(p.name)}</h4>
                   <div class="project-card-id">${escapeHtml(p.project_id)}</div>
                 </div>
-                <button type="button" class="btn btn-secondary small" onclick="selectWorkspace('${p.project_id}')">
-                  ${p.project_id === state.currentProject ? 'Active' : 'Select'}
-                </button>
+                <div class="btn-actions-group">
+                  <button type="button" class="btn btn-secondary small" onclick="selectWorkspace('${p.project_id}')">
+                    ${p.project_id === state.currentProject ? 'Active' : 'Select'}
+                  </button>
+                  ${state.currentRole !== 'Creator' ? `
+                    <button type="button" class="btn btn-ghost small" onclick="deleteWorkspace('${p.project_id}')" title="Delete workspace" style="color: var(--color-red);">
+                      &times;
+                    </button>
+                  ` : ''}
+                </div>
               </div>
               <p class="project-card-desc">${escapeHtml(p.description || 'No description.')}</p>
               <div style="font-size: 0.75rem; color: var(--accent-blue); margin-bottom: 0.75rem;">
@@ -952,6 +1224,24 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`Error loading projects: ${err.message}`, 'error');
     }
   }
+
+  
+  window.deleteWorkspace = async function(projectId) {
+    if (!confirm(`Are you sure you want to delete workspace '${projectId}'? All its facts and rules will be permanently removed.`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/projects/${projectId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+      showToast(`Workspace '${projectId}' deleted`, 'info');
+      if (state.currentProject === projectId) {
+        state.currentProject = 'default';
+      }
+      await loadProjectsDropdown();
+      await loadProjects();
+      loadVaultData();
+    } catch (err) {
+      showToast(`Failed to delete workspace: ${err.message}`, 'error');
+    }
+  };
 
   window.selectWorkspace = function(projectId) {
     state.currentProject = projectId;
@@ -1014,17 +1304,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) throw new Error(`Analytics error (${res.status})`);
       const data = await res.json();
 
+      const totalAudits = data.total_audits_recorded ?? data.total_documents_screened ?? 0;
+
       // KPIs
-      el.kpiTotalAudits.textContent = data.total_audits_recorded ?? 0;
-      el.kpiAvgCompliance.textContent = data.average_compliance_score != null ? `${data.average_compliance_score.toFixed(0)}%` : '--';
-      el.kpiAvgLatency.textContent = data.average_latency_ms != null ? `${data.average_latency_ms.toFixed(1)} ms` : '-- ms';
+      el.kpiTotalAudits.textContent = totalAudits;
+      el.kpiAvgCompliance.textContent = (data.average_compliance_score != null && totalAudits > 0)
+        ? `${data.average_compliance_score.toFixed(0)}%`
+        : '--';
+      el.kpiAvgLatency.textContent = ((data.average_latency_ms != null || data.average_precheck_latency_ms != null) && totalAudits > 0)
+        ? `${(data.average_latency_ms ?? data.average_precheck_latency_ms).toFixed(1)} ms`
+        : '-- ms';
       el.kpiTotalViolations.textContent = data.total_violations_detected ?? 0;
 
       // Dimension breakdown
       const dimStats = data.violations_by_dimension || {};
-      const dimKeys = Object.keys(dimStats);
+      const dimKeys = Object.keys(dimStats).filter(k => dimStats[k] > 0);
       if (dimKeys.length === 0) {
-        el.analyticsDimensionStats.innerHTML = '<p class="text-muted">No audit violation data yet.</p>';
+        el.analyticsDimensionStats.innerHTML = '<p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No audit violation data yet. Run drafts in the Studio to track compliance flags.</p>';
       } else {
         el.analyticsDimensionStats.innerHTML = dimKeys.map(k => `
           <div class="analytics-row-item">
@@ -1036,13 +1332,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Actions breakdown
       const actionStats = data.actions_recorded || {};
-      const actionKeys = Object.keys(actionStats);
+      const actionKeys = Object.keys(actionStats).filter(k => actionStats[k] > 0);
       if (actionKeys.length === 0) {
-        el.analyticsActionsStats.innerHTML = '<p class="text-muted">No review actions recorded yet.</p>';
+        el.analyticsActionsStats.innerHTML = '<p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No review actions recorded yet.</p>';
       } else {
         el.analyticsActionsStats.innerHTML = actionKeys.map(k => `
           <div class="analytics-row-item">
-            <span style="font-weight: 500;">Action: ${escapeHtml(k)}</span>
+            <span style="font-weight: 500; text-transform: capitalize;">Action: ${escapeHtml(k)}</span>
             <span class="badge badge-accent">${actionStats[k]} recorded</span>
           </div>
         `).join('');
@@ -1055,6 +1351,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   el.btnRefreshAnalytics.addEventListener('click', loadAnalytics);
+
+  if (el.btnClearAnalytics) {
+    el.btnClearAnalytics.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to reset all telemetry metrics, violation counters, and audit history?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/analytics/clear`, {
+          method: 'POST',
+          headers: { 'X-Zuard-Role': state.reviewerRole || 'Reviewer' }
+        });
+        if (res.ok) {
+          showToast('Telemetry and analytics counters reset to zero.', 'info');
+          loadAnalytics();
+        } else {
+          throw new Error(`Clear failed (${res.status})`);
+        }
+      } catch (err) {
+        showToast(`Clear error: ${err.message}`, 'error');
+      }
+    });
+  }
 
   // =========================================================================
   // Activity Tab Operations
@@ -1074,24 +1390,41 @@ document.addEventListener('DOMContentLoaded', () => {
     state.reviewerRole = role === 'Creator' ? 'Creator' : 'Central Reviewer';
     localStorage.setItem('zuard_role_mode', role);
 
+    const isCreator = (role === 'Creator');
+
     document.body.classList.remove('mode-creator', 'mode-reviewer');
-    document.body.classList.add(role === 'Creator' ? 'mode-creator' : 'mode-reviewer');
+    document.body.classList.add(isCreator ? 'mode-creator' : 'mode-reviewer');
 
     if (el.btnRoleCreator && el.btnRoleReviewer) {
-      el.btnRoleCreator.classList.toggle('active', role === 'Creator');
-      el.btnRoleReviewer.classList.toggle('active', role === 'Reviewer');
+      el.btnRoleCreator.classList.toggle('active', isCreator);
+      el.btnRoleReviewer.classList.toggle('active', !isCreator);
     }
 
     const activeModeText = document.getElementById('activeModeText');
-    if (role === 'Creator') {
+    if (isCreator) {
       if (el.brandSubtitle) el.brandSubtitle.textContent = 'Creator Studio • Real-Time Pre-Screen & Copywriting';
       if (el.tabReviewLabel) el.tabReviewLabel.textContent = 'Studio & Pre-Screen';
       if (el.tabQueueLabel) el.tabQueueLabel.textContent = 'My Submissions';
       if (el.queuePanelHeading) el.queuePanelHeading.textContent = 'My Submissions & Campaign Tracker';
       if (el.queuePanelSubheading) el.queuePanelSubheading.textContent = 'Track governance review statuses and reviewer notes for your campaign drafts.';
       if (el.btnRunAuditText) el.btnRunAuditText.textContent = 'Pre-Screen Draft';
-      if (el.btnOpenSubmitModal) el.btnOpenSubmitModal.classList.remove('hidden');
-      if (activeModeText) activeModeText.textContent = 'Creator Studio Active';
+      if (el.btnSubmitModalText) el.btnSubmitModalText.textContent = 'Submit for Review';
+      if (activeModeText) activeModeText.textContent = 'Creator Studio Active (Author Mode)';
+
+      // Permissions: Brand Vault is restricted for Creator (NO ACCESS)
+      if (el.tabNavVault) el.tabNavVault.style.display = 'none';
+      if (state.currentTab === 'vault') switchTab('review');
+      if (el.vaultUploadCard) el.vaultUploadCard.classList.add('hidden');
+      if (el.btnClearVault) el.btnClearVault.classList.add('hidden');
+
+      // Permissions: Projects tab creation restricted for Creator
+      if (el.btnOpenCreateProjectModal) el.btnOpenCreateProjectModal.classList.add('hidden');
+      if (el.createProjectFormCard) el.createProjectFormCard.classList.add('hidden');
+      if (el.projectsReadOnlyCard) el.projectsReadOnlyCard.classList.remove('hidden');
+
+      // Permissions: Analytics & Activity clearances restricted for Creator
+      if (el.btnClearAnalytics) el.btnClearAnalytics.classList.add('hidden');
+      if (el.btnClearActivity) el.btnClearActivity.classList.add('hidden');
     } else {
       if (el.brandSubtitle) el.brandSubtitle.textContent = 'Central Governance Console • Policy & Approvals';
       if (el.tabReviewLabel) el.tabReviewLabel.textContent = 'Studio & Inspector';
@@ -1099,20 +1432,44 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el.queuePanelHeading) el.queuePanelHeading.textContent = 'Governance Review Queue';
       if (el.queuePanelSubheading) el.queuePanelSubheading.textContent = 'Review marketing copy submitted by creators. Inspect violations, approve, request changes, or record legal overrides.';
       if (el.btnRunAuditText) el.btnRunAuditText.textContent = 'Audit Draft';
-      if (activeModeText) activeModeText.textContent = 'Central Reviewer Active';
+      if (el.btnSubmitModalText) el.btnSubmitModalText.textContent = 'Direct Sign-Off & Certify';
+      if (activeModeText) activeModeText.textContent = 'Central Reviewer Active (Admin Authority)';
+
+      // Permissions: Brand Vault full authority for Reviewer
+      if (el.tabNavVault) el.tabNavVault.style.display = '';
+      if (el.vaultUploadCard) el.vaultUploadCard.classList.remove('hidden');
+      if (el.btnClearVault) el.btnClearVault.classList.remove('hidden');
+
+      // Permissions: Projects tab creation enabled for Reviewer
+      if (el.btnOpenCreateProjectModal) el.btnOpenCreateProjectModal.classList.remove('hidden');
+      if (el.createProjectFormCard) el.createProjectFormCard.classList.remove('hidden');
+      if (el.projectsReadOnlyCard) el.projectsReadOnlyCard.classList.add('hidden');
+
+      // Permissions: Analytics & Activity clearances enabled for Reviewer
+      if (el.btnClearAnalytics) el.btnClearAnalytics.classList.remove('hidden');
+      if (el.btnClearActivity) el.btnClearActivity.classList.remove('hidden');
+    }
+
+    // Re-render Inspector cards if an audit is active to update Override button
+    if (state.currentAuditResponse && state.currentAuditResponse.inspector_cards) {
+      renderInspectorCards(state.currentAuditResponse.inspector_cards);
     }
 
     loadSubmissionStats();
     loadSubmissions();
-    showToast(`Switched to ${role === 'Creator' ? '🎨 Creator (Client)' : '🛡️ Central Reviewer (Admin)'} Mode`, 'info');
+    showToast(`Switched to ${isCreator ? '🎨 Creator (Author)' : '🛡️ Central Reviewer (Admin Authority)'} Mode`, 'info');
     logActivity('ROLE', `Role switched to ${role}`, `Workspace: ${state.currentProject}`);
   }
 
   if (el.btnRoleCreator) {
-    el.btnRoleCreator.addEventListener('click', () => setRoleMode('Creator'));
+    el.btnRoleCreator.addEventListener('click', () => {
+      if (state.currentRole !== 'Creator') setRoleMode('Creator');
+    });
   }
   if (el.btnRoleReviewer) {
-    el.btnRoleReviewer.addEventListener('click', () => setRoleMode('Reviewer'));
+    el.btnRoleReviewer.addEventListener('click', () => {
+      if (state.currentRole !== 'Reviewer') setRoleMode('Reviewer');
+    });
   }
 
   // =========================================================================
@@ -1272,26 +1629,52 @@ document.addEventListener('DOMContentLoaded', () => {
   // Creator Submit Modal Logic
   // =========================================================================
   function openSubmitModal() {
-    const text = el.draftContentInput.value.trim();
+    if (!el.submitDraftModal) return;
+    const text = el.draftContentInput ? el.draftContentInput.value.trim() : '';
     if (!text) {
-      showToast('Please type or load marketing copy into the editor before submitting.', 'error');
-      el.draftContentInput.focus();
+      showToast('Please enter draft copy in the editor before submitting for review.', 'error');
+      if (el.draftContentInput) el.draftContentInput.focus();
       return;
     }
 
     if (el.subTitleInput) {
-      el.subTitleInput.value = el.documentTitleInput.value.trim() || 'Marketing Campaign Draft';
+      el.subTitleInput.value = deriveTitle(text);
+    }
+    if (el.subCreatorNameInput && !el.subCreatorNameInput.value.trim()) {
+      el.subCreatorNameInput.value = (state.currentRole === 'Reviewer') ? 'Central Reviewer' : 'Content Creator';
     }
     if (el.modalPreWorkspace) {
       el.modalPreWorkspace.textContent = state.currentProject;
     }
-    const score = state.currentAuditResponse?.compliance_score ?? '--';
-    const violations = state.currentAuditResponse?.total_violations_count ?? '--';
-    if (el.modalPreScore) el.modalPreScore.textContent = `${score}/100`;
-    if (el.modalPreViolations) el.modalPreViolations.textContent = violations;
+    const hasAudited = Boolean(state.currentAuditResponse && state.currentAuditResponse.compliance_score != null);
+    const score = hasAudited ? state.currentAuditResponse.compliance_score : null;
+    const violations = hasAudited ? state.currentAuditResponse.total_violations_count : null;
+    if (el.modalPreScore) {
+      el.modalPreScore.innerHTML = hasAudited ? `${score}/100` : '<span style="color: var(--color-amber);">Not Pre-Screened</span>';
+    }
+    if (el.modalPreViolations) {
+      el.modalPreViolations.innerHTML = hasAudited ? `${violations}` : '<span style="color: var(--text-muted); font-weight: normal; font-size: 0.8rem;">Will auto-audit on submit</span>';
+    }
 
-    const savedCreator = localStorage.getItem('zuard_creator_name') || 'Content Team Alpha';
-    if (el.subCreatorNameInput) el.subCreatorNameInput.value = savedCreator;
+    let savedCreator = localStorage.getItem('zuard_creator_name') || '';
+    if (savedCreator.toLowerCase().includes('alpha') || savedCreator.toLowerCase().includes('content team') || savedCreator.toLowerCase().includes('content creator')) {
+      localStorage.removeItem('zuard_creator_name');
+      savedCreator = '';
+    }
+    if (el.subCreatorNameInput) {
+      el.subCreatorNameInput.value = savedCreator;
+    }
+
+    const isReviewer = (state.currentRole === 'Reviewer');
+    if (el.submitModalTitle) {
+      el.submitModalTitle.textContent = isReviewer ? 'Direct Central Governance Sign-Off' : 'Submit for Central Governance Review';
+    }
+    if (el.submitModalSubtitle) {
+      el.submitModalSubtitle.textContent = isReviewer ? 'Reviewer certifies draft and records an official approved governance record.' : 'Hand off your pre-screened draft to the Brand Review & Policy Admin team.';
+    }
+    if (el.btnConfirmSubmitText) {
+      el.btnConfirmSubmitText.textContent = isReviewer ? 'Certify & Approve Draft' : 'Submit to Governance Queue';
+    }
 
     el.submitDraftModal.classList.remove('hidden');
   }
@@ -1311,13 +1694,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function confirmSubmitDraft() {
-    const title = el.subTitleInput.value.trim() || 'Untitled Campaign';
-    const creatorName = el.subCreatorNameInput.value.trim() || 'Content Creator';
-    const notes = el.subNotesInput.value.trim();
-    const contentText = el.draftContentInput.value.trim();
+    const contentText = el.draftContentInput ? el.draftContentInput.value.trim() : '';
+    if (!contentText) {
+      showToast('Draft content is empty. Please enter draft copy in the editor.', 'error');
+      closeSubmitModal();
+      if (el.draftContentInput) el.draftContentInput.focus();
+      return;
+    }
+
+    const title = (el.subTitleInput && el.subTitleInput.value.trim()) || deriveTitle(contentText);
+    const creatorName = (el.subCreatorNameInput && el.subCreatorNameInput.value.trim()) || ((state.currentRole === 'Reviewer') ? 'Central Reviewer' : 'Content Creator');
+    const notes = el.subNotesInput ? el.subNotesInput.value.trim() : '';
 
     localStorage.setItem('zuard_creator_name', creatorName);
 
+    const isReviewer = (state.currentRole === 'Reviewer');
     const payload = {
       project_id: state.currentProject,
       title: title,
@@ -1326,34 +1717,49 @@ document.addEventListener('DOMContentLoaded', () => {
       notes: notes,
       compliance_score: state.currentAuditResponse?.compliance_score || 0,
       violations_count: state.currentAuditResponse?.total_violations_count || 0,
-      audit_data: state.currentAuditResponse || null
+      audit_data: state.currentAuditResponse || null,
+      status: isReviewer ? 'APPROVED' : 'PENDING_REVIEW'
     };
 
+    const originalBtnContent = el.btnConfirmSubmitDraft.innerHTML;
     try {
       el.btnConfirmSubmitDraft.disabled = true;
+      el.btnConfirmSubmitDraft.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 4px;">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        Submitting to Queue...
+      `;
       const res = await fetch(`${API_BASE}/submissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error(`Submission failed (${res.status})`);
+      if (!res.ok) {
+        let errDetail = `${res.statusText} (${res.status})`;
+        try {
+          const errJson = await res.json();
+          if (errJson && errJson.detail) errDetail = errJson.detail;
+          else if (errJson && errJson.message) errDetail = errJson.message;
+        } catch (_) {}
+        throw new Error(errDetail);
+      }
       const created = await res.json();
 
       closeSubmitModal();
       showToast(`Submission ${created.id} sent to Central Reviewer!`, 'success');
       logActivity('SUBMIT', `Submitted "${title}" to Governance Queue`, `ID: ${created.id} • Creator: ${creatorName}`);
 
-      loadSubmissionStats();
-      loadSubmissions();
-
-      // Switch to queue tab to see status
-      switchTab('queue');
+      // Switch to queue tab to see status (switchTab automatically refreshes submissions & stats)
+      switchTab('queue', true);
     } catch (err) {
       console.error('Submit draft error:', err);
       showToast(`Submission error: ${err.message}`, 'error');
     } finally {
       el.btnConfirmSubmitDraft.disabled = false;
+      el.btnConfirmSubmitDraft.innerHTML = originalBtnContent;
     }
   }
 
@@ -1365,6 +1771,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reviewer Decision Modal Logic
   // =========================================================================
   window.openReviewModal = async function(subId) {
+    if (state.currentRole === 'Creator') {
+      showToast('Permission Denied: Only Central Reviewers can make governance decisions.', 'error');
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/submissions/${subId}`);
       if (!res.ok) throw new Error(`Could not fetch submission (${res.status})`);
@@ -1510,6 +1920,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.deleteSubmission = async function(subId) {
+    if (state.currentRole === 'Creator') {
+      showToast('Permission Denied: Only Central Reviewers can delete submissions.', 'error');
+      return;
+    }
     if (!confirm(`Are you sure you want to delete submission ${subId}?`)) return;
     try {
       const res = await fetch(`${API_BASE}/submissions/${subId}`, { method: 'DELETE' });
@@ -1528,6 +1942,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialization Sequence
   // =========================================================================
   async function init() {
+    // Purge any legacy mock creator name from localStorage
+    const legacyCreator = localStorage.getItem('zuard_creator_name');
+    if (legacyCreator && (legacyCreator.toLowerCase().includes('alpha') || legacyCreator.toLowerCase().includes('content team') || legacyCreator.toLowerCase().includes('content creator'))) {
+      localStorage.removeItem('zuard_creator_name');
+    }
+
     await checkServerHealth();
     await loadProjectsDropdown();
     updateWordCount();

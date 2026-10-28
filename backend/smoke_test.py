@@ -4,8 +4,8 @@ import config
 from vault.project_manager import MultiProjectManager
 
 pm = MultiProjectManager()
-orch = pm.get_orchestrator('zuard-enterprise')
-synth = pm.get_synthesizer('zuard-enterprise')
+orch = pm.get_orchestrator('default')
+synth = pm.get_synthesizer('default')
 
 text = 'Our #1 AI platform is super cheap and guaranteed to save you 99% on costs. Using our revolutionary miracle engine.'
 
@@ -19,7 +19,7 @@ async def run():
         print(f'  [{card.severity}] {card.flag_id} | {card.dimension} | snippet: "{card.original_snippet}" | cite: {card.cited_source[:60]}')
     print()
     print('RAG check (query: "super cheap pricing tone"):')
-    vault = pm.get_vault('zuard-enterprise')
+    vault = pm.get_vault('default')
     hits = vault.retriever.retrieve('super cheap pricing tone', top_k=2)
     for h in hits:
         print(f'  doc={h["doc_name"]} page={h["page_number"]} score={h["score"]} sec={h["section"]}')

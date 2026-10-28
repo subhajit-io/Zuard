@@ -49,36 +49,36 @@ class MultiProjectManager:
         projects.sort(key=lambda x: x["project_id"])
         return projects
 
-    def get_vault(self, project_id: str = "zuard-enterprise") -> BrandVault:
-        clean_id = project_id.strip().lower()
+    def get_vault(self, project_id: str = "default") -> BrandVault:
+        clean_id = (project_id or "default").strip().lower()
         if clean_id not in self._vault_cache:
-            p_dir = self.projects_root / clean_id
-            if not p_dir.exists():
-                # Fallback to default
-                clean_id = "zuard-enterprise"
+            if clean_id == "default":
+                vault = BrandVault(base_dir=config.VAULT_DIR)
+                vault.load_all()
+                self._vault_cache[clean_id] = vault
+            else:
                 p_dir = self.projects_root / clean_id
-                p_dir.mkdir(parents=True, exist_ok=True)
-
-            # Initialize dedicated BrandVault for this project
-            db_path = p_dir / "project_facts.db"
-            vault = BrandVault(base_dir=p_dir)
-            vault.sample_dir = p_dir
-            vault.db_path = db_path
-            from vault.facts_db import FactsDatabase
-            vault.facts_db = FactsDatabase(db_path)
-            vault.load_all()
-            self._vault_cache[clean_id] = vault
+                if not p_dir.exists():
+                    p_dir.mkdir(parents=True, exist_ok=True)
+                db_path = p_dir / "project_facts.db"
+                vault = BrandVault(base_dir=p_dir)
+                vault.sample_dir = p_dir
+                vault.db_path = db_path
+                from vault.facts_db import FactsDatabase
+                vault.facts_db = FactsDatabase(db_path)
+                vault.load_all()
+                self._vault_cache[clean_id] = vault
 
         return self._vault_cache[clean_id]
 
-    def get_orchestrator(self, project_id: str = "zuard-enterprise") -> StaticAuditOrchestrator:
+    def get_orchestrator(self, project_id: str = "default") -> StaticAuditOrchestrator:
         clean_id = project_id.strip().lower()
         if clean_id not in self._orchestrator_cache:
             vault = self.get_vault(clean_id)
             self._orchestrator_cache[clean_id] = StaticAuditOrchestrator(vault)
         return self._orchestrator_cache[clean_id]
 
-    def get_synthesizer(self, project_id: str = "zuard-enterprise") -> DeltaSynthesizer:
+    def get_synthesizer(self, project_id: str = "default") -> DeltaSynthesizer:
         clean_id = project_id.strip().lower()
         if clean_id not in self._synthesizer_cache:
             vault = self.get_vault(clean_id)
@@ -145,3 +145,14 @@ class MultiProjectManager:
             "ingestion": ingest_summary,
             "message": f"Project '{name}' successfully created and isolated."
         }
+
+    def delete_project(self, project_id: str) -> bool:
+        clean_id = project_id.strip().lower()
+        p_dir = self.projects_root / clean_id
+        if p_dir.exists() and p_dir.is_dir():
+            shutil.rmtree(p_dir, ignore_errors=True)
+            self._vault_cache.pop(clean_id, None)
+            self._orchestrator_cache.pop(clean_id, None)
+            self._synthesizer_cache.pop(clean_id, None)
+            return True
+        return False

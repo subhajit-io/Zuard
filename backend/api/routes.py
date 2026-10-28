@@ -1,8 +1,9 @@
 import os
+import re
 import shutil
 from pathlib import Path
 from typing import Optional, List
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Query, Header
 from fastapi.responses import JSONResponse
 
 from vault.brand_vault import BrandVault
@@ -27,13 +28,23 @@ project_manager = MultiProjectManager()
 submissions_db = SubmissionsDatabase(config.DB_PATH)
 telemetry = GovernanceTelemetry()
 
+def check_reviewer_role(x_zuard_role: Optional[str] = None, role_param: Optional[str] = None):
+    """Enforces that administrative and governance actions require Central Reviewer authority."""
+    role = x_zuard_role or role_param
+    if role and role.strip().lower() == "creator":
+        raise HTTPException(
+            status_code=403,
+            detail="Permission Denied: Central Reviewer authority required for this operation. Creators do not have administrative or decision permissions."
+        )
+
+
 @router.get("/health")
 def health_check():
     return {
         "status": "healthy",
         "service": "Zuard Static RAG Pipeline",
         "version": "1.0.0",
-        "privacy_mode": "Local Edge" if config.LOCAL_PRIVACY_MODE or not config.GEMINI_API_KEY else "Cloud Gemini 2.5 Flash",
+        "privacy_mode": "Local Edge" if config.LOCAL_PRIVACY_MODE or not config.GEMINI_API_KEY else f"Cloud Gemini ({config.GEMINI_MODEL})",
         "multi_project_enabled": True
     }
 
@@ -48,8 +59,10 @@ async def create_project(
     name: str = Form(...),
     description: Optional[str] = Form(""),
     persona: Optional[str] = Form("Standard Corporate"),
-    guidelines_file: Optional[UploadFile] = File(None)
+    guidelines_file: Optional[UploadFile] = File(None),
+    x_zuard_role: Optional[str] = Header(None)
 ):
+    check_reviewer_role(x_zuard_role)
     """Creates a new isolated project brand workspace with its own guidelines and static workers."""
     temp_file_path = None
     if guidelines_file:
@@ -69,9 +82,14 @@ async def create_project(
     return res
 
 @router.get("/vault")
-def get_vault_data(project_id: str = Query("zuard-enterprise")):
-    """Returns the Brand Vault for a specific project workspace."""
-    vault = project_manager.get_vault(project_id)
+def get_vault_data(
+    project_id: str = "default",
+    x_zuard_role: Optional[str] = Header(None)
+):
+    """Returns the Brand Vault for a specific project workspace. Restricted to Central Reviewers."""
+    check_reviewer_role(x_zuard_role)
+    clean_id = project_id if isinstance(project_id, str) else "default"
+    vault = project_manager.get_vault(clean_id)
     return {
         "project_id": project_id,
         "summary": vault.get_vault_summary(),
@@ -81,11 +99,24 @@ def get_vault_data(project_id: str = Query("zuard-enterprise")):
         "visual_rules": vault.get_visual_config()
     }
 
+@router.post("/clear-vault")
+def clear_vault_data(project_id: str = Form("default"), x_zuard_role: Optional[str] = Header(None)):
+    check_reviewer_role(x_zuard_role)
+    """Wipes all brand guidelines, facts, terminology, and colors for a workspace."""
+    vault = project_manager.get_vault(project_id)
+    orch = project_manager.get_orchestrator(project_id)
+    result = vault.clear_all_guidelines()
+    if orch:
+        orch.re_instruct_workers()
+    return result
+
 @router.post("/upload-guidelines")
 async def upload_guidelines(
     file: UploadFile = File(...),
-    project_id: str = Form("zuard-enterprise")
+    project_id: str = Form("default"),
+    x_zuard_role: Optional[str] = Header(None)
 ):
+    check_reviewer_role(x_zuard_role)
     """
     Dynamically ingests a Brand Guidelines PDF or document into a specific project workspace,
     extracts rules/facts/colors, updates that project's Branched RAG,
@@ -107,9 +138,20 @@ async def upload_guidelines(
 
 @router.post("/audit-content", response_model=AuditResponse)
 async def audit_content(req: AuditRequest):
-    project_id = req.project_id or "zuard-enterprise"
+    project_id = req.project_id or "default"
     orchestrator = project_manager.get_orchestrator(project_id)
     synthesizer = project_manager.get_synthesizer(project_id)
+
+    # Auto-derive document title from content if omitted or empty
+    doc_title = (req.document_title or "").strip()
+    if not doc_title or doc_title.lower() in ["untitled_draft", "untitled draft", "draft", ""]:
+        lines = [ln.strip() for ln in req.content_text.splitlines() if ln.strip()]
+        if lines:
+            first_line = re.sub(r'^[#*>\s]+', '', lines[0]).strip()
+            doc_title = (first_line[:47] + "...") if len(first_line) > 50 else (first_line or "Draft Copy")
+        else:
+            doc_title = "Draft Copy"
+    req.document_title = doc_title
 
     # Convert color_pairs format if present
     c_pairs = None
@@ -150,11 +192,11 @@ async def audit_content(req: AuditRequest):
 @router.post("/audit-upload")
 async def audit_upload(
     file: UploadFile = File(...),
-    project_id: Optional[str] = Form("zuard-enterprise"),
+    project_id: Optional[str] = Form("default"),
     document_title: Optional[str] = Form(None),
     privacy_mode: Optional[bool] = Form(False)
 ):
-    p_id = project_id or "zuard-enterprise"
+    p_id = project_id or "default"
     vault = project_manager.get_vault(p_id)
     orchestrator = project_manager.get_orchestrator(p_id)
     synthesizer = project_manager.get_synthesizer(p_id)
@@ -171,7 +213,7 @@ async def audit_upload(
     image_path = None
 
     suffix = file_path.suffix.lower()
-    if suffix in [".txt", ".md"]:
+    if suffix in [".txt", ".md", ".html", ".htm", ".json", ".csv"]:
         with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             content_text = f.read()
     elif suffix == ".pdf":
@@ -200,7 +242,9 @@ async def audit_upload(
     return audit_resp
 
 @router.post("/review-action")
-def review_action(req: ReviewActionRequest):
+def review_action(req: ReviewActionRequest, x_zuard_role: Optional[str] = Header(None)):
+    if req.action.upper() == "OVERRIDE":
+        check_reviewer_role(x_zuard_role, req.reviewer_role)
     telemetry.record_action(req.model_dump())
     return {
         "status": "SUCCESS",
@@ -214,6 +258,12 @@ def review_action(req: ReviewActionRequest):
 @router.get("/analytics")
 def get_analytics():
     return telemetry.get_insights()
+
+@router.post("/analytics/clear")
+def clear_analytics(x_zuard_role: Optional[str] = Header(None)):
+    check_reviewer_role(x_zuard_role)
+    telemetry.clear()
+    return {"status": "SUCCESS", "message": "Telemetry metrics cleared"}
 
 # =========================================================================
 # Two-Sided Architecture: Creator <-> Central Reviewer Submissions
@@ -233,7 +283,22 @@ async def create_submission(req: SubmissionCreateRequest):
     """
     Creator submits a draft and its pre-screen audit results to the Central Reviewer.
     """
-    p_id = req.project_id or "zuard-enterprise"
+    p_id = req.project_id or "default"
+
+    # Auto-derive document title from content if omitted or empty
+    doc_title = (req.title or "").strip()
+    if not doc_title or doc_title.lower() in ["untitled_draft", "untitled draft", "draft", "untitled campaign", ""]:
+        lines = [ln.strip() for ln in req.content_text.splitlines() if ln.strip()]
+        if lines:
+            first_line = re.sub(r'^[#*>\s]+', '', lines[0]).strip()
+            doc_title = (first_line[:47] + "...") if len(first_line) > 50 else (first_line or "Draft Copy")
+        else:
+            doc_title = "Draft Copy"
+    req.title = doc_title
+
+    creator = (req.creator_name or "").strip()
+    if not creator:
+        req.creator_name = "Content Creator"
 
     # If audit_data was not supplied, we can run a quick audit
     audit_data = req.audit_data
@@ -289,7 +354,8 @@ def get_submission(sub_id: str):
     return sub
 
 @router.post("/submissions/{sub_id}/decision")
-def make_submission_decision(sub_id: str, req: SubmissionDecisionRequest):
+def make_submission_decision(sub_id: str, req: SubmissionDecisionRequest, x_zuard_role: Optional[str] = Header(None)):
+    check_reviewer_role(x_zuard_role)
     """
     Central Reviewer (Admin) records an official decision:
     - APPROVE
@@ -311,7 +377,7 @@ def make_submission_decision(sub_id: str, req: SubmissionDecisionRequest):
     # Record in telemetry
     telemetry.record_action({
         "action": f"DECISION_{req.action.upper()}",
-        "project_id": sub.get("project_id", "zuard-enterprise"),
+        "project_id": sub.get("project_id", "default"),
         "submission_id": sub_id,
         "reviewer_role": "Central Reviewer",
         "notes": req.feedback_notes or req.justification
@@ -324,7 +390,8 @@ def make_submission_decision(sub_id: str, req: SubmissionDecisionRequest):
     }
 
 @router.delete("/submissions/{sub_id}")
-def delete_submission(sub_id: str):
+def delete_submission(sub_id: str, x_zuard_role: Optional[str] = Header(None)):
+    check_reviewer_role(x_zuard_role)
     """Delete a submission."""
     success = submissions_db.delete_submission(sub_id)
     if not success:
@@ -336,3 +403,10 @@ def get_submission_stats(project_id: Optional[str] = Query(None)):
     """Returns counts for Pending, Approved, and Changes Requested."""
     return submissions_db.get_stats(project_id=project_id)
 
+@router.delete("/projects/{project_id}")
+def delete_workspace(project_id: str, x_zuard_role: Optional[str] = Header(None)):
+    check_reviewer_role(x_zuard_role)
+    success = project_manager.delete_project(project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Workspace not found.")
+    return {"status": "SUCCESS", "message": f"Workspace '{project_id}' deleted."}

@@ -1,5 +1,7 @@
 """Quick pipeline test — skips PDF loading by using sample_data directly."""
 import sys, asyncio
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 sys.path.insert(0, '.')
 
 # Test 1: worker imports

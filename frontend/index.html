@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
   <!-- Toast Notification Center -->
@@ -35,10 +35,10 @@
       <div class="header-divider"></div>
 
       <!-- Project Workspace Selector -->
-      <div class="control-group">
+      <div class="control-group hidden" id="workspaceSelectorGroup">
         <label for="projectSelector" class="control-label">Workspace:</label>
         <select id="projectSelector" class="form-select">
-          <option value="zuard-enterprise">Zuard Enterprise</option>
+          
         </select>
       </div>
     </div>
@@ -99,12 +99,7 @@
         </button>
       </div>
 
-      <div class="sub-nav-right">
-        <span class="active-mode-indicator" id="activeModeIndicator">
-          <span class="mode-dot"></span>
-          <span id="activeModeText">Creator Studio Active</span>
-        </span>
-      </div>
+      
     </div>
   </nav>
 
@@ -122,37 +117,45 @@
           <div class="card-header">
             <div class="header-title-row">
               <h2 class="card-title">Content Draft</h2>
-              <span class="badge badge-neutral" id="wordCountBadge">0 words</span>
-            </div>
-            
-            <!-- Sample text quick-loaders -->
-            <div class="sample-loaders">
-              <span class="sample-label">Load Samples:</span>
-              <button type="button" class="btn-sample btn-sample-violations" id="loadSample1" title="Load high violations sample">
-                Sample 1 (Violations)
-              </button>
-              <button type="button" class="btn-sample btn-sample-borderline" id="loadSample2" title="Load borderline sample">
-                Sample 2 (Borderline)
-              </button>
-              <button type="button" class="btn-sample btn-sample-clean" id="loadSample3" title="Load clean sample">
-                Sample 3 (Clean)
-              </button>
+              <div class="card-actions-inline">
+                <span class="badge badge-neutral" id="wordCountBadge">0 words</span>
+                <input type="file" id="draftFileInput" class="file-input-hidden" accept=".pdf,.txt,.md,.html,.htm,.json,.png,.jpg,.jpeg,.webp">
+                <button type="button" class="btn btn-secondary small btn-plus-upload" id="btnPlusUpload" title="Upload other formats (PDF, Images, TXT, MD, HTML)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Upload File</span>
+                </button>
+              </div>
             </div>
           </div>
 
           <div class="card-body">
-            <div class="form-group">
+            <div class="form-group" style="display: none;">
               <label for="documentTitleInput" class="form-label">Document Title</label>
-              <input type="text" id="documentTitleInput" class="form-input" placeholder="e.g. Q3 Product Launch Press Release" value="Marketing Campaign Draft v1">
+              <input type="text" id="documentTitleInput" class="form-input" placeholder="Document title (auto-detected)...">
+            </div>
+
+            <!-- Uploaded File Badge / Preview Indicator -->
+            <div id="draftFileAttachment" class="file-attachment-chip hidden">
+              <div class="file-chip-left">
+                <span id="attachIcon" class="attach-icon">📄</span>
+                <span id="attachFileName" class="attach-name font-mono" style="font-weight: 600;">file.pdf</span>
+                <span id="attachFileSize" class="attach-size text-muted">(0 KB)</span>
+              </div>
+              <button type="button" class="btn-remove-attachment" id="btnRemoveAttachment" title="Remove attached file">&times;</button>
+            </div>
+
+            <!-- Uploaded Image Banner Preview (if an image is uploaded) -->
+            <div id="draftImagePreviewContainer" class="draft-image-preview hidden">
+              <img id="draftImagePreview" src="" alt="Draft visual banner preview">
             </div>
 
             <div class="form-group">
-              <label for="draftContentInput" class="form-label">Draft Text</label>
-              <textarea id="draftContentInput" class="form-textarea" rows="7" placeholder="Paste or type copy here to audit against brand facts, terminology, tone, and WCAG rules..."></textarea>
+              <label for="draftContentInput" class="form-label">Draft Content (Type, paste, or upload PDF/Images via + button)</label>
+              <textarea id="draftContentInput" class="form-textarea" rows="8" placeholder="Paste copy, or click '+ Upload File' to audit PDF, Docs, or Images. Zuard automatically inspects all facts, claims, terminology, numbers, and colors..."></textarea>
             </div>
 
             <div class="editor-actions-row">
-              <div class="mode-toggles">
+              <div class="mode-toggles" style="display: none;">
                 <label class="toggle-checkbox-label">
                   <input type="checkbox" id="privacyModeCheckbox">
                   <span class="toggle-text">Local Edge Privacy Mode (Offline)</span>
@@ -160,6 +163,10 @@
               </div>
 
               <div class="action-buttons">
+                <button type="button" class="btn btn-secondary btn-plus-upload" id="btnPlusUploadBottom" title="Upload other formats (PDF, Images, TXT, MD, HTML)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>+ File</span>
+                </button>
                 <button type="button" class="btn btn-secondary" id="btnClearDraft">
                   Clear
                 </button>
@@ -168,9 +175,9 @@
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   <span id="btnRunAuditText">Pre-Screen Draft</span>
                 </button>
-                <button type="button" class="btn btn-emerald" id="btnOpenSubmitModal" title="Submit draft to Central Reviewer for governance sign-off">
+                <button type="button" class="btn btn-emerald" id="btnOpenSubmitModal" title="Submit draft for governance sign-off">
                   <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Submit for Review</span>
+                  <span id="btnSubmitModalText">Submit for Review</span>
                 </button>
               </div>
             </div>
@@ -223,40 +230,7 @@
               </div>
             </div>
 
-            <!-- Worker Parallel Latencies Chips -->
-            <div class="worker-chips-section">
-              <div class="section-micro-heading">Deterministic Worker Timing (Parallel Execution)</div>
-              <div class="worker-chips-grid">
-                <div class="worker-chip">
-                  <span class="chip-worker-id">W1 Lexical & Tone</span>
-                  <span class="chip-worker-time" id="w1Time">-- ms</span>
-                </div>
-                <div class="worker-chip">
-                  <span class="chip-worker-id">W2 Branched Facts</span>
-                  <span class="chip-worker-time" id="w2Time">-- ms</span>
-                </div>
-                <div class="worker-chip">
-                  <span class="chip-worker-id">W3 Visual & Color</span>
-                  <span class="chip-worker-time" id="w3Time">-- ms</span>
-                </div>
-                <div class="worker-chip">
-                  <span class="chip-worker-id">W4 WCAG 2.1 A11y</span>
-                  <span class="chip-worker-time" id="w4Time">-- ms</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Dimension Breakdown Progress Bars -->
-            <div class="dimension-breakdown-section" id="dimensionBreakdown">
-              <div class="section-micro-heading">Dimension Violation Distribution</div>
-              <div class="dim-tags-row" id="dimTagsContainer">
-                <span class="dim-chip" data-dim="tone">Tone: <b id="dimToneCount">0</b></span>
-                <span class="dim-chip" data-dim="terminology">Terminology: <b id="dimTermCount">0</b></span>
-                <span class="dim-chip" data-dim="facts">Facts: <b id="dimFactsCount">0</b></span>
-                <span class="dim-chip" data-dim="claims">Claims: <b id="dimClaimsCount">0</b></span>
-                <span class="dim-chip" data-dim="wcag">WCAG: <b id="dimWcagCount">0</b></span>
-              </div>
-            </div>
+            
 
           </div>
         </div>
@@ -396,15 +370,16 @@
       <div class="tab-panel-header">
         <div>
           <h2 class="panel-heading">Brand Knowledge Vault</h2>
-          <p class="panel-subheading">Authoritative source-of-truth facts, terminology dictionaries, and design tokens ingested for this workspace.</p>
+          <p class="panel-subheading">Authoritative source-of-truth facts, terminology dictionaries, and design tokens (Central Reviewer Authority).</p>
         </div>
         <div class="panel-header-actions">
           <button type="button" class="btn btn-secondary" id="btnRefreshVault">Refresh Vault</button>
+          <button type="button" class="btn btn-secondary" id="btnClearVault" style="color: var(--color-red); border-color: var(--color-red-border);">Clear Guidelines</button>
         </div>
       </div>
 
-      <!-- Guideline Ingest Dropzone -->
-      <div class="card upload-card mb-4">
+      <!-- Guideline Ingest Dropzone (Reviewer Authority) -->
+      <div class="card upload-card mb-4" id="vaultUploadCard">
         <div class="card-header">
           <h3 class="card-title">Dynamic Guideline Ingestion</h3>
           <span class="badge badge-accent">Auto-updates TF-IDF RAG &amp; Static Workers</span>
@@ -531,7 +506,20 @@
         <!-- Rendered via JS -->
       </div>
 
-      <!-- Create Project Form Card -->
+      <!-- Creator Mode Read-Only Notice for Workspaces -->
+      <div class="card mt-4 hidden" id="projectsReadOnlyCard">
+        <div class="card-body" style="padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid var(--accent-blue); background: var(--bg-card);">
+          <div style="font-size: 1.6rem;">🔒</div>
+          <div>
+            <div style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">Assigned Workspaces (Creator Mode)</div>
+            <div style="color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.2rem;">
+              Select your active workspace from the cards above. Creating new brand profiles and provisioning multi-tenant workspaces is restricted to <strong>Central Reviewers</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Project Form Card (Reviewer Authority) -->
       <div class="card mt-4" id="createProjectFormCard">
         <div class="card-header">
           <h3 class="card-title">Create Workspace</h3>
@@ -584,7 +572,8 @@
           <p class="panel-subheading">Aggregated metrics, worker latencies, and violation dimensions across all audits.</p>
         </div>
         <div class="panel-header-actions">
-          <button type="button" class="btn btn-secondary" id="btnRefreshAnalytics">Refresh Telemetry</button>
+          <button type="button" class="btn btn-secondary small" id="btnRefreshAnalytics">Refresh Telemetry</button>
+          <button type="button" class="btn btn-secondary small" id="btnClearAnalytics" style="color: var(--color-red); border-color: var(--color-red-border);">Clear Telemetry</button>
         </div>
       </div>
 
@@ -620,7 +609,7 @@
           </div>
           <div class="card-body">
             <div id="analyticsDimensionStats" class="dimension-analytics-list">
-              <!-- Dynamically populated -->
+              <p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No audit violation data yet. Run drafts in the Studio to track compliance flags.</p>
             </div>
           </div>
         </div>
@@ -631,7 +620,7 @@
           </div>
           <div class="card-body">
             <div id="analyticsActionsStats" class="actions-analytics-list">
-              <!-- Dynamically populated -->
+              <p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No review actions recorded yet.</p>
             </div>
           </div>
         </div>
@@ -716,25 +705,27 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div>
-            <h3 class="modal-title">Submit for Central Governance Review</h3>
-            <p class="modal-subtitle">Hand off your pre-screened draft to the Brand Review & Policy Admin team.</p>
+            <h3 class="modal-title" id="submitModalTitle">Submit for Central Governance Review</h3>
+            <p class="modal-subtitle" id="submitModalSubtitle">Hand off your pre-screened draft to the Brand Review & Policy Admin team.</p>
           </div>
         </div>
         <button type="button" class="btn-close" id="btnCloseSubmitModal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="subCreatorNameInput" class="form-label">Creator / Team Name</label>
-          <input type="text" id="subCreatorNameInput" class="form-input" placeholder="e.g. Content Team Alpha / Alex Rivera" value="Content Team Alpha">
-        </div>
-        <div class="form-group">
           <label for="subTitleInput" class="form-label">Document / Campaign Title</label>
-          <input type="text" id="subTitleInput" class="form-input" placeholder="Document title">
+          <input type="text" id="subTitleInput" class="form-input" placeholder="Auto-detected from draft...">
         </div>
         <div class="form-group">
-          <label for="subNotesInput" class="form-label">Submission Brief &amp; Context</label>
-          <textarea id="subNotesInput" class="form-textarea" rows="3" placeholder="Brief notes for Central Reviewer (e.g. Target audience, launch date, specific claims to verify)..."></textarea>
+          <label for="subCreatorNameInput" class="form-label">Creator / Team Name</label>
+          <input type="text" id="subCreatorNameInput" class="form-input" placeholder="Content Creator">
         </div>
+        <details style="margin-bottom: 1rem; font-size: 0.8125rem; color: var(--text-muted);">
+          <summary style="cursor: pointer; padding: 0.25rem 0; user-select: none;">Optional Notes for Reviewer</summary>
+          <div class="form-group mt-2">
+            <textarea id="subNotesInput" class="form-textarea" rows="2" placeholder="Optional notes..."></textarea>
+          </div>
+        </details>
         <div class="pre-screen-summary-box">
           <div class="pre-screen-line">
             <span>Current Pre-Screen Score:</span>
@@ -746,7 +737,10 @@
           </div>
           <div class="pre-screen-line">
             <span>Target Workspace:</span>
-            <strong id="modalPreWorkspace">zuard-enterprise</strong>
+            <strong id="modalPreWorkspace">Default</strong>
+          </div>
+          <div class="pre-screen-line" id="modalPreTip" style="margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-muted);">
+            <span>💡 <em>Tip: You can cancel to click "Pre-Screen Draft" in the editor first to inspect violations before submitting.</em></span>
           </div>
         </div>
       </div>
@@ -754,7 +748,7 @@
         <button type="button" class="btn btn-secondary" id="btnCancelSubmitModal">Cancel</button>
         <button type="button" class="btn btn-emerald" id="btnConfirmSubmitDraft">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Submit to Governance Queue
+          <span id="btnConfirmSubmitText">Submit to Governance Queue</span>
         </button>
       </div>
     </div>
@@ -828,6 +822,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

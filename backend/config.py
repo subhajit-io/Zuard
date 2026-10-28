@@ -19,7 +19,8 @@ DOCS_DIR = BASE_DIR.parent / "docs"
 
 # Delta-Only Synthesizer Settings
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_EMBEDDING_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "text-embedding-004")
 LOCAL_PRIVACY_MODE = os.getenv("LOCAL_PRIVACY_MODE", "false").lower() in ("true", "1", "yes")
 
 # Worker 1: Lexical & Style Thresholds

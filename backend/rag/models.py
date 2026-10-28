@@ -27,5 +27,5 @@ class ReviewResponse(BaseModel):
 
 class TextReviewRequest(BaseModel):
     content_text: str = Field(..., min_length=1, description="Marketing copy or digital content to review")
-    project_id: Optional[str] = Field("zuard-enterprise", description="Isolated project workspace ID")
+    project_id: Optional[str] = Field("default", description="Isolated project workspace ID")
     document_title: Optional[str] = Field(None, description="Optional title or headline of the collateral")

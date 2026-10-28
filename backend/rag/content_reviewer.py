@@ -18,7 +18,7 @@ class AIContentReviewer:
         self.chroma_service = chroma_service or ChromaService()
         self.doc_processor = DocumentProcessor()
         self.api_key = config.GEMINI_API_KEY
-        self.model_name = getattr(config, "GEMINI_MODEL", "gemini-2.5-flash")
+        self.model_name = getattr(config, "GEMINI_MODEL", "gemini-3.8-flash")
         self._client = None
 
         if self.api_key and not getattr(config, "LOCAL_PRIVACY_MODE", False):
@@ -32,7 +32,7 @@ class AIContentReviewer:
     def review_text(
         self,
         content_text: str,
-        project_id: str = "zuard-enterprise"
+        project_id: str = "default"
     ) -> ReviewResponse:
         """
         Reviews marketing text against ChromaDB-retrieved guidelines.
@@ -82,7 +82,7 @@ class AIContentReviewer:
         self,
         file_path: Path,
         filename: str,
-        project_id: str = "zuard-enterprise"
+        project_id: str = "default"
     ) -> ReviewResponse:
         """
         Multimodal review of PDF or visual creative (PNG, JPG, JPEG, WEBP).
