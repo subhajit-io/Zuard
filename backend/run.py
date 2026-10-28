@@ -18,13 +18,15 @@ def start_server():
     import uvicorn
     from api.app import app
     import config as config
+    host = "0.0.0.0" if os.environ.get("RENDER") else os.environ.get("HOST", getattr(config, "HOST", "0.0.0.0"))
+    port = int(os.environ.get("PORT", getattr(config, "PORT", 8000)))
     print("\n" + "="*60)
     print(" 🚀 STARTING ZUARD GOVERNANCE SERVER")
-    print(f" 📍 Web Portal URL  : http://{config.HOST}:{config.PORT}")
-    print(f" 📚 API Docs        : http://{config.HOST}:{config.PORT}/docs")
+    print(f" 📍 Web Portal URL  : http://{host}:{port}")
+    print(f" 📚 API Docs        : http://{host}:{port}/docs")
     print(f" 🛡️  Privacy Mode   : {'Local Edge Offline' if config.LOCAL_PRIVACY_MODE or not config.GEMINI_API_KEY else f'Cloud Gemini ({config.GEMINI_MODEL})'}")
     print("="*60 + "\n")
-    uvicorn.run("api.app:app", host=config.HOST, port=config.PORT, reload=False)
+    uvicorn.run("api.app:app", host=host, port=port, reload=False)
 
 def run_tests():
     from test_pipeline import main as test_main

@@ -44,5 +44,5 @@ WCAG_AA_LARGE_TEXT_CONTRAST = 3.0
 WCAG_AAA_CONTRAST = 7.0
 
 # Server Settings
-HOST = os.getenv("HOST", "0.0.0.0")
+HOST = "0.0.0.0" if os.getenv("RENDER") else os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))

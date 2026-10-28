@@ -3,7 +3,7 @@ services:
     name: zuard-backend
     runtime: python
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && python run.py --serve
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     plan: free
     envVars:
@@ -17,3 +17,4 @@ services:
         value: gemini-3.8-flash
       - key: LOCAL_PRIVACY_MODE
         value: "false"
+

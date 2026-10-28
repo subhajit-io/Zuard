@@ -46,8 +46,11 @@ if serve_dir.exists():
     app.mount("/", StaticFiles(directory=str(serve_dir), html=True), name="frontend")
 
 def start():
+    import os
     import uvicorn
-    uvicorn.run("api.app:app", host=config.HOST, port=config.PORT, reload=False)
+    host = "0.0.0.0" if os.environ.get("RENDER") else os.environ.get("HOST", getattr(config, "HOST", "0.0.0.0"))
+    port = int(os.environ.get("PORT", getattr(config, "PORT", 8000)))
+    uvicorn.run("api.app:app", host=host, port=port, reload=False)
 
 if __name__ == "__main__":
     start()
