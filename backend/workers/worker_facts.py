@@ -9,9 +9,9 @@ class FactVerificationWorker:
         self._compile_patterns()
 
     def _compile_patterns(self):
-        # Superlative ranking / unverified claims (using boundary or whitespace to support '#1')
+        # Superlative ranking / unverified claims / promotional discount buzzwords
         self.superlative_pattern = re.compile(
-            r"(?:\b|(?<=\s)|(?<=^))(#1|number one|no\.\s*1|fastest|cheapest|world'?s best|unrivaled|unmatched|most powerful|industry-first|100% infallible|miracle\s+engine|zero\s+risk|zero\s+chargeback\s+risk)\b",
+            r"(?:\b|(?<=\s)|(?<=^))(#1|number one|no\.\s*1|fastest|cheapest|world'?s best|unrivaled|unmatched|most powerful|industry-first|100% infallible|miracle\s+engine|zero\s+risk|zero\s+chargeback\s+risk|special\s+discounts?|flash\s+sales?|unlimited\s+free|free\s+forever|lowest\s+price\s+guaranteed|deep\s+discounts?|mega\s+discounts?)\b",
             re.IGNORECASE
         )
         # Percentage figures
@@ -62,8 +62,8 @@ class FactVerificationWorker:
                 "context_sentence": sentence,
                 "start_idx": start_idx,
                 "end_idx": end_idx,
-                "issue": f"Unsupported promotional claim: '{snippet}'. Brand policy strictly forbids unverified superlatives without third-party analyst audit.",
-                "suggested_rewrite": "an industry-leading",
+                "issue": f"Unsupported promotional / superlative claim: '{snippet}'. Brand policy strictly forbids informal discount buzzwords, flash sales, and unverified superlatives without third-party commercial audit.",
+                "suggested_rewrite": "volume-tiered institutional pricing" if any(w in snippet.lower() for w in ["discount", "price", "free", "sale"]) else "an industry-leading",
                 "cited_source": "Brand Book v2, Page 8, Section 2.2: Verifiable Market Claims",
                 "worker_source": "Static Worker #2 (Fact Verification)",
                 "confidence_score": 1.0

@@ -3,9 +3,12 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parent
+# Load environment variables from backend directory or parent
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent
 # Ensure backend directory is in sys.path for direct imports
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))

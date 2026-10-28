@@ -87,9 +87,7 @@ EXPECTED JSON SCHEMA:
         preferred_model = getattr(config, "GEMINI_MODEL", "gemini-3.8-flash")
         models_to_try = [
             preferred_model,
-            "gemini-3.8-flash",
-            "gemini-flash-latest",
-            "gemini-2.5-flash"
+            "gemini-3.8-flash"
         ]
         # Deduplicate while preserving order
         unique_models = list(dict.fromkeys(models_to_try))
@@ -214,13 +212,13 @@ EXPECTED JSON SCHEMA:
                         full_rewrite = ai_synth["suggested_full_rewrite"]
                     cloud_synthesis_applied = True
             except Exception as e:
-                print(f"[DeltaSynthesizer] Notice: Cloud Gemini call failed, using deterministic RAG analyzer: {e}")
+                print(f"[DeltaSynthesizer] Notice: Cloud Gemini call unavailable, using deterministic RAG analyzer: {e}")
 
         # Update attribution if cloud synthesis was not applied
-        if not cloud_synthesis_applied and not use_cloud_llm:
+        if not cloud_synthesis_applied:
             for card in inspector_cards:
                 worker_source = card.ai_disclosure.split(" + ")[0] if " + " in card.ai_disclosure else "Static Worker"
-                card.ai_disclosure = f"{worker_source} + Synthesized by Local Edge Engine"
+                card.ai_disclosure = f"{worker_source} + Synthesized by Local Deterministic Engine"
 
         # Generate Flagged Draft Markup (Inline annotations like in wireframe)
         markup_text = original_text
@@ -229,8 +227,15 @@ EXPECTED JSON SCHEMA:
                 tag = f" [FLAG {idx+1}: {card.dimension.upper()} - {card.severity}]"
                 markup_text = markup_text.replace(card.original_snippet, f"{card.original_snippet}{tag}", 1)
 
-        # Final mode string
-        mode_str = "Confidential Local Edge Mode (Ollama/Offline)" if (privacy_mode_active or not api_key) else f"Google Gemini {active_model_name} Cloud"
+        # Final mode string accurately reflects whether cloud was used or offline fallback
+        if cloud_synthesis_applied:
+            mode_str = f"Google Gemini {active_model_name} Cloud"
+        elif privacy_mode_active:
+            mode_str = "Confidential Local Edge Mode (Offline)"
+        elif not api_key:
+            mode_str = "Local Deterministic Engine (No API Key)"
+        else:
+            mode_str = "Local Deterministic Edge Engine"
 
         return AuditResponse(
             project_id=project_id,

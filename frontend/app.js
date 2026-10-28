@@ -430,7 +430,18 @@ document.addEventListener('DOMContentLoaded', () => {
     el.wordCountBadge.textContent = `${words} word${words === 1 ? '' : 's'}`;
   }
 
-  el.draftContentInput.addEventListener('input', updateWordCount);
+  let autoAuditDebounceTimer = null;
+  function onDraftInput() {
+    updateWordCount();
+    clearTimeout(autoAuditDebounceTimer);
+    const text = el.draftContentInput.value.trim();
+    if (!text || text.length < 5) return;
+    autoAuditDebounceTimer = setTimeout(() => {
+      runAudit({ silent: true });
+    }, 1200);
+  }
+
+  el.draftContentInput.addEventListener('input', onDraftInput);
 
   
   // =========================================================================
@@ -589,11 +600,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // Run Audit
   // =========================================================================
-  async function runAudit() {
+  async function runAudit(opts = {}) {
+    const isSilent = opts.silent || false;
     const content = el.draftContentInput.value.trim();
     if (!content) {
-      showToast('Please enter or load draft text to audit.', 'error');
-      el.draftContentInput.focus();
+      if (!isSilent) {
+        showToast('Please enter or load draft text to audit.', 'error');
+        el.draftContentInput.focus();
+      }
       return;
     }
 
@@ -608,8 +622,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // UI Loading state
-    el.btnRunAudit.disabled = true;
-    el.auditSpinner.classList.remove('hidden');
+    if (!isSilent) {
+      el.btnRunAudit.disabled = true;
+      el.auditSpinner.classList.remove('hidden');
+    }
 
     try {
       const res = await fetch(`${API_BASE}/audit-content`, {
@@ -626,18 +642,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const auditData = await res.json();
       state.currentAuditResponse = auditData;
       renderAuditResults(auditData);
-      showToast(`Audit completed in ${auditData.execution_time_ms.toFixed(1)} ms`, 'success');
-      logActivity(
-        'AUDIT',
-        `Audited "${auditData.document_title}"`,
-        `Score: ${auditData.compliance_score}/100 • ${auditData.total_violations_count} flag(s) • ${auditData.execution_time_ms.toFixed(1)}ms`
-      );
+      if (!isSilent) {
+        showToast(`Audit completed in ${auditData.execution_time_ms.toFixed(1)} ms`, 'success');
+        logActivity(
+          'AUDIT',
+          `Audited "${auditData.document_title}"`,
+          `Score: ${auditData.compliance_score}/100 • ${auditData.total_violations_count} flag(s) • ${auditData.execution_time_ms.toFixed(1)}ms`
+        );
+      }
     } catch (err) {
       console.error('Audit execution error:', err);
-      showToast(`Audit error: ${err.message}`, 'error');
+      if (!isSilent) showToast(`Audit error: ${err.message}`, 'error');
     } finally {
-      el.btnRunAudit.disabled = false;
-      el.auditSpinner.classList.add('hidden');
+      if (!isSilent) {
+        el.btnRunAudit.disabled = false;
+        el.auditSpinner.classList.add('hidden');
+      }
     }
   }
 
@@ -863,6 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.draftContentInput.value = current.replace(target, replacement);
       updateWordCount();
       showToast(`Updated editor draft with replacement: "${replacement}"`, 'info');
+      runAudit({ silent: true });
     }
   }
 
@@ -978,6 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWordCount();
     showToast('Applied synthesized rewrite to draft editor.', 'success');
     logActivity('REPLACE', 'Applied synthesized rewrite to editor', `Document: ${el.documentTitleInput.value}`);
+    runAudit({ silent: false });
   });
 
   // =========================================================================
