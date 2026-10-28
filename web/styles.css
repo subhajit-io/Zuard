@@ -758,6 +758,15 @@ body.mode-reviewer .mode-dot {
   background: #dcfce7;
 }
 
+.btn:disabled,
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
+  box-shadow: none !important;
+  filter: grayscale(40%);
+}
+
 .btn-warning {
   background: var(--color-amber-bg);
   color: var(--color-amber);

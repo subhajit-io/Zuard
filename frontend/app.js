@@ -29,6 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     currentRole: localStorage.getItem('zuard_role_mode') || 'Creator', // 'Creator' | 'Reviewer'
     reviewerRole: 'Reviewer',
     currentAuditResponse: null,
+    isPreScreened: false,
+    preScreenedText: '',
     activityLog: [],
     modalTargetFlag: null,
     submissions: [],
@@ -428,20 +430,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = el.draftContentInput.value.trim();
     const words = text ? text.split(/\s+/).length : 0;
     el.wordCountBadge.textContent = `${words} word${words === 1 ? '' : 's'}`;
+
+    // If draft text is modified after being pre-screened, require pre-screening again before submitting
+    if (state.isPreScreened && text !== state.preScreenedText) {
+      invalidatePreScreen();
+    }
   }
 
-  let autoAuditDebounceTimer = null;
-  function onDraftInput() {
-    updateWordCount();
-    clearTimeout(autoAuditDebounceTimer);
-    const text = el.draftContentInput.value.trim();
-    if (!text || text.length < 5) return;
-    autoAuditDebounceTimer = setTimeout(() => {
-      runAudit({ silent: true });
-    }, 1200);
+  function invalidatePreScreen() {
+    state.isPreScreened = false;
+    state.preScreenedText = '';
+    if (el.btnOpenSubmitModal) {
+      el.btnOpenSubmitModal.disabled = true;
+      el.btnOpenSubmitModal.setAttribute('title', 'Pre-screen your draft before submitting for review');
+    }
   }
 
-  el.draftContentInput.addEventListener('input', onDraftInput);
+  function setPreScreened(content) {
+    state.isPreScreened = true;
+    state.preScreenedText = content;
+    if (el.btnOpenSubmitModal) {
+      el.btnOpenSubmitModal.disabled = false;
+      el.btnOpenSubmitModal.setAttribute('title', 'Submit pre-screened draft for governance review');
+    }
+  }
+
+  el.draftContentInput.addEventListener('input', updateWordCount);
 
   
   // =========================================================================
@@ -513,6 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await res.json();
       state.currentAuditResponse = data;
+      setPreScreened(data.original_text || el.draftContentInput.value.trim());
 
       // Populate draft content with the extracted text
       if (data.original_text && el.draftContentInput) {
@@ -594,6 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
   el.btnClearDraft.addEventListener('click', () => {
     el.draftContentInput.value = '';
     updateWordCount();
+    invalidatePreScreen();
     showToast('Draft cleared', 'info');
   });
 
@@ -641,6 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const auditData = await res.json();
       state.currentAuditResponse = auditData;
+      setPreScreened(content);
       renderAuditResults(auditData);
       if (!isSilent) {
         showToast(`Audit completed in ${auditData.execution_time_ms.toFixed(1)} ms`, 'success');
@@ -1652,6 +1669,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   function openSubmitModal() {
     if (!el.submitDraftModal) return;
+    if (!state.isPreScreened || !state.currentAuditResponse) {
+      showToast('Please click "Pre-Screen Draft" first before submitting for review.', 'warning');
+      return;
+    }
     const text = el.draftContentInput ? el.draftContentInput.value.trim() : '';
     if (!text) {
       showToast('Please enter draft copy in the editor before submitting for review.', 'error');
@@ -1973,6 +1994,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await checkServerHealth();
     await loadProjectsDropdown();
     updateWordCount();
+    invalidatePreScreen();
     setRoleMode(state.currentRole);
     loadSubmissionStats();
     logActivity('SYS', 'Zuard Governance Studio Initialized', `API Endpoint: ${API_BASE}`);
