@@ -4,6 +4,7 @@
   "description": "Zuard Real-Time Brand Governance & Pre-Screening Web Portal",
   "main": "index.html",
   "scripts": {
+    "build": "node -e \"const fs=require('fs'); fs.mkdirSync('public', {recursive:true}); ['index.html','app.js','styles.css'].forEach(f => fs.copyFileSync(f, 'public/'+f));\"",
     "start": "npx serve -l 3000 .",
     "dev": "npx serve -l 3000 ."
   },

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zuard — Brand Governance Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=17">
+</head>
+<body>
+  <!-- Toast Notification Center -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-name-wrap">
+            <span class="brand-name">ZUARD</span>
+            <span class="brand-edition">Enterprise</span>
+          </div>
+          <span class="brand-sub" id="brandSubtitle">Brand Governance &amp; Content Pre-Screening Engine</span>
+        </div>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Project Workspace Selector -->
+      <div class="control-group hidden" id="workspaceSelectorGroup">
+        <label for="projectSelector" class="control-label">Workspace:</label>
+        <select id="projectSelector" class="form-select">
+          
+        </select>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Two-Sided Role Mode Segmented Toggle (No Login Required) -->
+      <div class="role-switcher-container" title="Toggle between Creator Studio and Central Reviewer Admin Console">
+        <span class="role-switcher-label">Mode:</span>
+        <div class="segmented-role-toggle" id="roleToggleGroup">
+          <button type="button" class="role-toggle-btn active" id="btnRoleCreator" data-role="Creator">
+            <span class="role-btn-icon">🎨</span>
+            <span class="role-btn-text">Creator</span>
+          </button>
+          <button type="button" class="role-toggle-btn" id="btnRoleReviewer" data-role="Reviewer">
+            <span class="role-btn-icon">🛡️</span>
+            <span class="role-btn-text">Central Reviewer</span>
+            <span class="role-queue-badge hidden" id="headerQueueBadge">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Engine Status Indicator -->
+      <div id="engineStatusBadge" class="status-indicator-badge">
+        <span class="status-dot"></span>
+        <span id="engineStatusText">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Secondary Navigation Subheader Bar -->
+  <nav class="sub-nav-bar" aria-label="Main Navigation">
+    <div class="sub-nav-container">
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="review" role="tab" aria-selected="true" id="tabNavReview">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span id="tabReviewLabel">Studio &amp; Pre-Screen</span>
+        </button>
+        <button class="nav-tab" data-tab="queue" role="tab" aria-selected="false" id="tabNavQueue">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span id="tabQueueLabel">Governance Queue</span>
+          <span class="nav-badge" id="tabQueueBadge" style="display:none;">0</span>
+        </button>
+        <button class="nav-tab" data-tab="vault" role="tab" aria-selected="false" id="tabNavVault">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          Brand Vault
+        </button>
+        <button class="nav-tab" data-tab="projects" role="tab" aria-selected="false" id="tabNavProjects">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Projects
+        </button>
+        <button class="nav-tab" data-tab="analytics" role="tab" aria-selected="false" id="tabNavAnalytics">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Analytics
+        </button>
+        <button class="nav-tab" data-tab="activity" role="tab" aria-selected="false" id="tabNavActivity">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Activity
+        </button>
+      </div>
+
+      
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-content">
+
+    <!-- ================= TAB 1: REVIEW (MAIN) ================= -->
+    <section id="tab-review" class="tab-panel active">
+      
+      <!-- Top Split Layout: Editor & Scorecard -->
+      <div class="review-split-grid">
+        
+        <!-- Left: Draft Input & Controls -->
+        <div class="card editor-card">
+          <div class="card-header">
+            <div class="header-title-row">
+              <h2 class="card-title">Content Draft</h2>
+              <div class="card-actions-inline">
+                <span class="badge badge-neutral" id="wordCountBadge">0 words</span>
+                <input type="file" id="draftFileInput" class="file-input-hidden" accept=".pdf,.txt,.md,.html,.htm,.json,.png,.jpg,.jpeg,.webp">
+                <button type="button" class="btn btn-secondary small btn-plus-upload" id="btnPlusUpload" title="Upload other formats (PDF, Images, TXT, MD, HTML)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Upload File</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="form-group" style="display: none;">
+              <label for="documentTitleInput" class="form-label">Document Title</label>
+              <input type="text" id="documentTitleInput" class="form-input" placeholder="Document title (auto-detected)...">
+            </div>
+
+            <!-- Uploaded File Badge / Preview Indicator -->
+            <div id="draftFileAttachment" class="file-attachment-chip hidden">
+              <div class="file-chip-left">
+                <span id="attachIcon" class="attach-icon">📄</span>
+                <span id="attachFileName" class="attach-name font-mono" style="font-weight: 600;">file.pdf</span>
+                <span id="attachFileSize" class="attach-size text-muted">(0 KB)</span>
+              </div>
+              <button type="button" class="btn-remove-attachment" id="btnRemoveAttachment" title="Remove attached file">&times;</button>
+            </div>
+
+            <!-- Uploaded Image Banner Preview (if an image is uploaded) -->
+            <div id="draftImagePreviewContainer" class="draft-image-preview hidden">
+              <img id="draftImagePreview" src="" alt="Draft visual banner preview">
+            </div>
+
+            <div class="form-group">
+              <label for="draftContentInput" class="form-label">Draft Content (Type, paste, or upload PDF/Images via + button)</label>
+              <textarea id="draftContentInput" class="form-textarea" rows="8" placeholder="Paste copy, or click '+ Upload File' to audit PDF, Docs, or Images. Zuard automatically inspects all facts, claims, terminology, numbers, and colors..."></textarea>
+            </div>
+
+            <div class="editor-actions-row">
+              <div class="mode-toggles" style="display: none;">
+                <label class="toggle-checkbox-label">
+                  <input type="checkbox" id="privacyModeCheckbox">
+                  <span class="toggle-text">Local Edge Privacy Mode (Offline)</span>
+                </label>
+              </div>
+
+              <div class="action-buttons">
+                <button type="button" class="btn btn-secondary btn-plus-upload" id="btnPlusUploadBottom" title="Upload other formats (PDF, Images, TXT, MD, HTML)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Attach File</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btnClearDraft">
+                  Clear
+                </button>
+                <button type="button" class="btn btn-primary" id="btnRunAudit">
+                  <span class="btn-spinner hidden" id="auditSpinner"></span>
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span id="btnRunAuditText">Pre-Screen Draft</span>
+                </button>
+                <button type="button" class="btn btn-emerald" id="btnOpenSubmitModal" title="Pre-screen your draft before submitting for review" disabled>
+                  <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span id="btnSubmitModalText">Submit for Review</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Governance Scorecard -->
+        <div class="card scorecard-card">
+          <div class="card-header">
+            <h2 class="card-title">Audit Scorecard</h2>
+            <div class="badges-row">
+              <span id="auditLatencyBadge" class="badge badge-neutral">-- ms</span>
+              <span id="auditStatusBadge" class="badge badge-neutral">AWAITING DRAFT</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Score Overview Row -->
+            <div class="score-overview-row">
+              <!-- Animated SVG Ring -->
+              <div class="score-ring-container">
+                <svg class="score-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                  <circle class="score-ring-bg" cx="60" cy="60" r="48" />
+                  <circle class="score-ring-fill" id="scoreRingCircle" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="score-ring-inner">
+                  <span class="score-number" id="complianceScoreValue">--</span>
+                  <span class="score-caption">COMPLIANCE</span>
+                </div>
+              </div>
+
+              <!-- Quick stats -->
+              <div class="score-metrics-list">
+                <div class="metric-item">
+                  <span class="metric-label">Violations</span>
+                  <span class="metric-value text-red" id="totalViolationsCount">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Engine Latency</span>
+                  <span class="metric-value text-accent" id="engineLatencyValue">0.0 ms</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Privacy Shield</span>
+                  <span class="metric-value text-muted" id="privacyShieldLabel">Local Edge Mode</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Readability Grade</span>
+                  <span class="metric-value" id="readabilityGradeValue">--</span>
+                </div>
+              </div>
+            </div>
+
+            
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Middle: Inspector Cards (Violations & Disclosures) -->
+      <section class="inspector-section">
+        <div class="section-header-row">
+          <div>
+            <h3 class="section-title">Inspector Cards &amp; Actionable Flags</h3>
+            <p class="section-subtitle">Real-time governance findings with authoritative citations and instant delta-rewrites.</p>
+          </div>
+          <div class="filter-actions">
+            <span class="badge badge-neutral" id="inspectorCardsCount">0 Flags Found</span>
+          </div>
+        </div>
+
+        <div id="inspectorCardsContainer" class="inspector-cards-list">
+          <!-- Populated dynamically via JS -->
+          <div class="empty-state-card">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-state-icon">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <path d="m9 15 2 2 4-4"/>
+            </svg>
+            <p class="empty-state-title">No audit run yet</p>
+            <p class="empty-state-desc">Select a sample or paste your draft above, then click <strong>Run Audit</strong> to trigger the 4 static workers.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom: Side-by-Side Diff View & Full Suggested Rewrite -->
+      <section class="diff-section">
+        <div class="diff-grid">
+          
+          <!-- Original with Flag Markup -->
+          <div class="card diff-card">
+            <div class="card-header">
+              <h3 class="card-title">Annotated Original Draft</h3>
+              <span class="badge badge-neutral">With Flag Highlights</span>
+            </div>
+            <div class="card-body">
+              <div id="annotatedMarkupView" class="diff-view-content">
+                <span class="placeholder-text">Original text markup with flagged words will appear here...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suggested Full Rewrite -->
+          <div class="card diff-card">
+            <div class="card-header">
+              <h3 class="card-title">Synthesized Compliant Rewrite</h3>
+              <div class="card-actions">
+                <button type="button" class="btn btn-secondary small" id="btnCopyRewrite">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+                <button type="button" class="btn btn-primary small" id="btnApplyRewriteToEditor">
+                  Use in Editor
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="suggestedRewriteView" class="diff-view-content rewrite-content">
+                <span class="placeholder-text">Synthesized compliant rewrite will appear here...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </section>
+
+    <!-- ================= TAB: SUBMISSIONS & WORKFLOW (QUEUE) ================= -->
+    <section id="tab-queue" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading" id="queuePanelHeading">Governance Review Queue</h2>
+          <p class="panel-subheading" id="queuePanelSubheading">Review marketing copy submitted by creators. Inspect violations, approve, request changes, or record legal overrides.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary" id="btnRefreshSubmissions">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Queue KPI Metrics -->
+      <div class="kpi-grid queue-kpis mb-4">
+        <div class="kpi-card">
+          <div class="kpi-value text-accent" id="qKpiPending">0</div>
+          <div class="kpi-label">Pending Review</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-green" id="qKpiApproved">0</div>
+          <div class="kpi-label">Approved</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-amber" id="qKpiChanges">0</div>
+          <div class="kpi-label">Changes Requested</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value text-muted" id="qKpiTotal">0</div>
+          <div class="kpi-label">Total Submissions</div>
+        </div>
+      </div>
+
+      <!-- Filters Bar -->
+      <div class="queue-filter-bar mb-3">
+        <div class="filter-group">
+          <label class="filter-label">Filter Status:</label>
+          <div class="btn-group-filters" id="queueStatusFilterGroup">
+            <button type="button" class="btn-filter active" data-status="all">All</button>
+            <button type="button" class="btn-filter" data-status="PENDING_REVIEW">Pending</button>
+            <button type="button" class="btn-filter" data-status="APPROVED">Approved</button>
+            <button type="button" class="btn-filter" data-status="CHANGES_REQUESTED">Needs Revision</button>
+            <button type="button" class="btn-filter" data-status="OVERRIDDEN">Overridden</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submissions List Card / Table -->
+      <div class="card">
+        <div class="card-body p-0">
+          <div id="submissionsTableContainer" class="submissions-table-wrap">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: BRAND VAULT ================= -->
+    <section id="tab-vault" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Brand Knowledge Vault</h2>
+          <p class="panel-subheading">Authoritative source-of-truth facts, terminology dictionaries, and design tokens (Central Reviewer Authority).</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary" id="btnRefreshVault">Refresh Vault</button>
+          <button type="button" class="btn btn-secondary" id="btnClearVault" style="color: var(--color-red); border-color: var(--color-red-border);">Clear Guidelines</button>
+        </div>
+      </div>
+
+      <!-- Guideline Ingest Dropzone (Reviewer Authority) -->
+      <div class="card upload-card mb-4" id="vaultUploadCard">
+        <div class="card-header">
+          <h3 class="card-title">Dynamic Guideline Ingestion</h3>
+          <span class="badge badge-accent">Auto-updates TF-IDF RAG &amp; Static Workers</span>
+        </div>
+        <div class="card-body">
+          <div id="guidelineDropzone" class="dropzone">
+            <input type="file" id="guidelineFileInput" class="file-input-hidden" accept=".pdf,.txt,.md">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="dropzone-icon">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="dropzone-text"><strong>Drag &amp; drop Brand Guidelines (PDF, TXT, MD)</strong> here or <span class="text-accent underline">browse files</span></p>
+            <p class="dropzone-sub">Extracts terminology rules, verified facts, and color tokens into the local Branched RAG retriever.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vault Stats Overview -->
+      <div class="vault-stats-grid mb-4" id="vaultStatsGrid">
+        <div class="card stat-card">
+          <span class="stat-label">Approved Facts</span>
+          <span class="stat-val text-green" id="vStatFacts">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Terminology Rules</span>
+          <span class="stat-val text-accent" id="vStatTerms">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Color Tokens</span>
+          <span class="stat-val text-amber" id="vStatColors">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">RAG Chunks</span>
+          <span class="stat-val text-muted" id="vStatChunks">0</span>
+        </div>
+      </div>
+
+      <!-- Vault Data Tables Split -->
+      <div class="vault-data-grid">
+        <!-- Approved Facts Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Approved Verified Facts</h3>
+            <span class="badge badge-neutral" id="factsCountBadge">0 Facts</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-container">
+              <table class="data-table" id="factsTable">
+                <thead>
+                  <tr>
+                    <th>Fact ID</th>
+                    <th>Claim / Statement</th>
+                    <th>Category</th>
+                    <th>Source Document</th>
+                  </tr>
+                </thead>
+                <tbody id="factsTableBody">
+                  <tr><td colspan="4" class="text-center text-muted py-4">Loading facts...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminology Rules Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Terminology &amp; Phrase Rules</h3>
+            <span class="badge badge-neutral" id="termsCountBadge">0 Rules</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-container">
+              <table class="data-table" id="termsTable">
+                <thead>
+                  <tr>
+                    <th>Prohibited Term</th>
+                    <th>Approved Alternative</th>
+                    <th>Severity</th>
+                    <th>Citation / Rule</th>
+                  </tr>
+                </thead>
+                <tbody id="termsTableBody">
+                  <tr><td colspan="4" class="text-center text-muted py-4">Loading terminology...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Palette Swatches -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3 class="card-title">Brand Color Palette Tokens</h3>
+          <span class="badge badge-neutral">Worker #3 &amp; #4 Standards</span>
+        </div>
+        <div class="card-body">
+          <div id="paletteSwatchesContainer" class="swatches-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: PROJECTS ================= -->
+    <section id="tab-projects" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Multi-Tenant Workspaces</h2>
+          <p class="panel-subheading">Isolated brand profiles, independent guideline stores, and dedicated static worker configurations.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-primary" id="btnOpenCreateProjectModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Workspace
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Workspaces Grid -->
+      <div class="projects-grid" id="projectsGridContainer">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Creator Mode Read-Only Notice for Workspaces -->
+      <div class="card mt-4 hidden" id="projectsReadOnlyCard">
+        <div class="card-body" style="padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid var(--accent-blue); background: var(--bg-card);">
+          <div style="font-size: 1.6rem;">🔒</div>
+          <div>
+            <div style="font-weight: 600; color: var(--text-main); font-size: 0.95rem;">Assigned Workspaces (Creator Mode)</div>
+            <div style="color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.2rem;">
+              Select your active workspace from the cards above. Creating new brand profiles and provisioning multi-tenant workspaces is restricted to <strong>Central Reviewers</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Project Form Card (Reviewer Authority) -->
+      <div class="card mt-4" id="createProjectFormCard">
+        <div class="card-header">
+          <h3 class="card-title">Create Workspace</h3>
+        </div>
+        <div class="card-body">
+          <form id="createProjectForm" class="create-project-form">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="newProjectId" class="form-label">Workspace ID (slug)</label>
+                <input type="text" id="newProjectId" class="form-input" placeholder="e.g. acme-fintech" required>
+              </div>
+              <div class="form-group">
+                <label for="newProjectName" class="form-label">Workspace Name</label>
+                <input type="text" id="newProjectName" class="form-input" placeholder="e.g. Acme FinTech Corp" required>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="newProjectPersona" class="form-label">Brand Persona / Voice</label>
+                <input type="text" id="newProjectPersona" class="form-input" placeholder="e.g. Authoritative, Precise, Transparent">
+              </div>
+              <div class="form-group">
+                <label for="newProjectGuidelinesFile" class="form-label">Initial Guidelines PDF (Optional)</label>
+                <input type="file" id="newProjectGuidelinesFile" class="form-input" accept=".pdf,.txt,.md">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newProjectDesc" class="form-label">Description</label>
+              <textarea id="newProjectDesc" class="form-textarea" rows="2" placeholder="Brief description of this workspace's governance rules..."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="btnSubmitCreateProject">
+                Create Workspace
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 4: ANALYTICS ================= -->
+    <section id="tab-analytics" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Governance Telemetry &amp; Insights</h2>
+          <p class="panel-subheading">Aggregated metrics, worker latencies, and violation dimensions across all audits.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary small" id="btnRefreshAnalytics">Refresh Telemetry</button>
+          <button type="button" class="btn btn-secondary small" id="btnClearAnalytics" style="color: var(--color-red); border-color: var(--color-red-border);">Clear Telemetry</button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="analytics-kpi-grid mb-4">
+        <div class="card stat-card">
+          <span class="stat-label">Total Audits</span>
+          <span class="stat-val text-accent" id="kpiTotalAudits">0</span>
+          <span class="stat-footer">Cumulative content runs</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Avg Compliance Score</span>
+          <span class="stat-val text-green" id="kpiAvgCompliance">--</span>
+          <span class="stat-footer">Across all workspaces</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Avg Engine Latency</span>
+          <span class="stat-val text-amber" id="kpiAvgLatency">-- ms</span>
+          <span class="stat-footer">Deterministic pre-check</span>
+        </div>
+        <div class="card stat-card">
+          <span class="stat-label">Violations Prevented</span>
+          <span class="stat-val text-red" id="kpiTotalViolations">0</span>
+          <span class="stat-footer">Deterministic worker flags</span>
+        </div>
+      </div>
+
+      <!-- Insights Details -->
+      <div class="analytics-details-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Top Flagged Dimensions</h3>
+          </div>
+          <div class="card-body">
+            <div id="analyticsDimensionStats" class="dimension-analytics-list">
+              <p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No audit violation data yet. Run drafts in the Studio to track compliance flags.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Review Actions Summary</h3>
+          </div>
+          <div class="card-body">
+            <div id="analyticsActionsStats" class="actions-analytics-list">
+              <p class="text-muted" style="padding: 0.75rem 0; font-size: 0.875rem;">No review actions recorded yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 5: ACTIVITY ================= -->
+    <section id="tab-activity" class="tab-panel">
+      <div class="tab-panel-header">
+        <div>
+          <h2 class="panel-heading">Audit &amp; Action Activity Stream</h2>
+          <p class="panel-subheading">Audit trail of content evaluations, reviewer acceptances, edits, and overrides.</p>
+        </div>
+        <div class="panel-header-actions">
+          <button type="button" class="btn btn-secondary small" id="btnClearActivity">Clear Stream</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="activity-stream" id="activityStreamContainer">
+            <div class="empty-state-card">
+              <p class="empty-state-title">No actions recorded yet</p>
+              <p class="empty-state-desc">Run audits or accept/edit flags on the Review tab to view the live activity stream.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Edit Flag Modal -->
+  <div id="editFlagModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Suggestion</h3>
+        <button type="button" class="btn-close" id="btnCloseEditModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="editModalSnippetDesc"></p>
+        <div class="form-group">
+          <label for="editSnippetInput" class="form-label">Your Custom Rewrite</label>
+          <textarea id="editSnippetInput" class="form-textarea" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelEditModal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btnSaveEditModal">Save &amp; Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Override Flag Modal -->
+  <div id="overrideFlagModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Override Violation</h3>
+        <button type="button" class="btn-close" id="btnCloseOverrideModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="overrideModalSnippetDesc"></p>
+        <div class="form-group">
+          <label for="overrideJustificationInput" class="form-label">Justification / Reason (Required for audit log)</label>
+          <textarea id="overrideJustificationInput" class="form-textarea" rows="3" placeholder="e.g. Legal exception approved by Chief Counsel in Memo #204..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelOverrideModal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnSaveOverrideModal">Confirm Override</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Draft Modal (Creator Side) -->
+  <div id="submitDraftModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-badge-icon icon-emerald">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="submitModalTitle">Submit for Central Governance Review</h3>
+            <p class="modal-subtitle" id="submitModalSubtitle">Hand off your pre-screened draft to the Brand Review & Policy Admin team.</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseSubmitModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="subTitleInput" class="form-label">Document / Campaign Title</label>
+          <input type="text" id="subTitleInput" class="form-input" placeholder="Auto-detected from draft...">
+        </div>
+        <div class="form-group">
+          <label for="subCreatorNameInput" class="form-label">Creator / Team Name</label>
+          <input type="text" id="subCreatorNameInput" class="form-input" placeholder="Content Creator">
+        </div>
+        <details style="margin-bottom: 1rem; font-size: 0.8125rem; color: var(--text-muted);">
+          <summary style="cursor: pointer; padding: 0.25rem 0; user-select: none;">Optional Notes for Reviewer</summary>
+          <div class="form-group mt-2">
+            <textarea id="subNotesInput" class="form-textarea" rows="2" placeholder="Optional notes..."></textarea>
+          </div>
+        </details>
+        <div class="pre-screen-summary-box">
+          <div class="pre-screen-line">
+            <span>Current Pre-Screen Score:</span>
+            <strong id="modalPreScore" class="text-accent">--/100</strong>
+          </div>
+          <div class="pre-screen-line">
+            <span>Violations / Flags:</span>
+            <strong id="modalPreViolations" class="text-red">0</strong>
+          </div>
+          <div class="pre-screen-line">
+            <span>Target Workspace:</span>
+            <strong id="modalPreWorkspace">Default</strong>
+          </div>
+          <div class="pre-screen-line" id="modalPreTip" style="margin-top: 0.35rem; font-size: 0.75rem; color: var(--text-muted);">
+            <span>💡 <em>Tip: You can cancel to click "Pre-Screen Draft" in the editor first to inspect violations before submitting.</em></span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnCancelSubmitModal">Cancel</button>
+        <button type="button" class="btn btn-emerald" id="btnConfirmSubmitDraft">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span id="btnConfirmSubmitText">Submit to Governance Queue</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review & Decision Modal (Central Reviewer Side) -->
+  <div id="reviewDecisionModal" class="modal-backdrop hidden">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-badge-icon icon-shield">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="decModalTitle">Review Submission</h3>
+            <span class="modal-subtitle" id="decModalSubtitle">Central Governance Decision</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="btnCloseDecisionModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="decision-meta-grid mb-3">
+          <div class="meta-item"><span class="m-label">Submission ID:</span> <strong id="decSubId" class="font-mono">--</strong></div>
+          <div class="meta-item"><span class="m-label">Creator:</span> <strong id="decCreator">--</strong></div>
+          <div class="meta-item"><span class="m-label">Workspace:</span> <strong id="decWorkspace">--</strong></div>
+          <div class="meta-item"><span class="m-label">Status:</span> <span id="decStatusBadge" class="badge">--</span></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Creator's Brief &amp; Notes</label>
+          <div id="decCreatorNotes" class="quote-box"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Submitted Content Draft</label>
+          <div id="decContentPreview" class="content-preview-box"></div>
+        </div>
+
+        <div class="decision-mode-selector mb-3">
+          <label class="form-label">Governance Decision Action:</label>
+          <div class="decision-action-tabs">
+            <button type="button" class="dec-tab-btn active" data-action="APPROVE" id="btnDecApproveTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              Approve
+            </button>
+            <button type="button" class="dec-tab-btn" data-action="REQUEST_CHANGES" id="btnDecChangesTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Request Changes
+            </button>
+            <button type="button" class="dec-tab-btn" data-action="OVERRIDE" id="btnDecOverrideTab">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Legal Override
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="decReviewerNameInput" class="form-label">Reviewer Name / Title</label>
+          <input type="text" id="decReviewerNameInput" class="form-input" value="Central Governance Lead">
+        </div>
+
+        <div class="form-group" id="decFeedbackGroup">
+          <label for="decFeedbackInput" class="form-label" id="decFeedbackLabel">Governance Feedback &amp; Review Remarks</label>
+          <textarea id="decFeedbackInput" class="form-textarea" rows="3" placeholder="Provide notes or revision guidelines for the creator..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btnInspectInStudio">Load into Studio Inspector</button>
+        <button type="button" class="btn btn-primary" id="btnSubmitDecision">Confirm Decision</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=18"></script>
+</body>
+</html>
